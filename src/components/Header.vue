@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Inject, } from "vue-property-decorator";
-import { routes } from '@/router';
+import { routes } from '../router';
 
 @Component
 export default class Header extends Vue {

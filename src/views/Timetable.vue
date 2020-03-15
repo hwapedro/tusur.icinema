@@ -11,6 +11,12 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Inject, } from "vue-property-decorator";
+import {
+  State,
+  Getter,
+  Action,
+  Mutation
+} from 'vuex-class';
 import { Film, Genre, Actor } from '../types';
 
 @Component

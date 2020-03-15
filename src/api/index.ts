@@ -7,6 +7,23 @@ class Api {
 
   }
 
+  async query(endpoint: string, conditions: any, limit?: number, skip?: number) {
+    try {
+      const body: any = {
+        conditions,
+      };
+      if (limit) body.limit = limit;
+      if (skip) body.skip = skip;
+      const { data, headers } = await axios.post(
+        `${this.base}${endpoint}${endpoint.slice(-1, 1) === '/' ? 'query' : '/query'}`,
+        body,
+        { headers: this.getHeaders() });
+      return { data, headers };
+    } catch (error) {
+      return error.response;
+    }
+  }
+
   async get(endpoint: string, query = {}) {
     try {
       const { data, headers } = await axios.get(`${this.base}${endpoint}`, {
@@ -62,7 +79,7 @@ class Api {
   }
 
 
-  private getHeaders(customHeaders?: any) {
+  private getHeaders(customHeaders: any = {}) {
     const headers: { [key: string]: string } = {
       Accept: 'appliaction/json',
     };
@@ -75,4 +92,4 @@ class Api {
   }
 }
 
-export default new Api('http://localhost:5300/api/v1/');
+export default new Api('http://localhost:5300/client/api/v1/');

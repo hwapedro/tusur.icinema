@@ -4,6 +4,7 @@ Vue.use(Vuex);
 import GlobalModule from './module';
 
 export default new Vuex.Store({
+  state: {},
   modules: {
     GlobalModule
   }

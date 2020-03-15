@@ -11,13 +11,25 @@
 import { Component, Vue } from "vue-property-decorator";
 import './assets/bulma.min.css';
 import Header from './components/Header.vue';
+import {
+  State,
+  Getter,
+  Action,
+  Mutation
+} from 'vuex-class';
 
 @Component({
   components: {
     Header
   }
 })
-export default class App extends Vue { }
+export default class App extends Vue { 
+  @Action fetchAll;
+
+  created() {
+    this.fetchAll();
+  }
+}
 </script>
 
 <style lang="scss">

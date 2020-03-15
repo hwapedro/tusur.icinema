@@ -7,9 +7,14 @@ export default class GlobalModule extends VuexModule {
   films: Film[] = [];
   cinemas: Cinema[] = [];
 
-  @MutationAction({ mutate: ['cinemas', 'films'] })
+  @Mutation
+  setAll(data: any) {
+    console.log(data);
+  }
+
+  @Action({ commit: 'setAll', rawError: true })
   async fetchAll() {
-    const { data } = await api.get('films/');
+    const { data } = await api.query('cinemas', {});
     return data;
   }
 }
