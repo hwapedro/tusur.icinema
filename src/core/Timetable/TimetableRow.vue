@@ -4,7 +4,7 @@
  
 <script lang="ts">
 import { Component, Prop, Vue, Inject, } from "vue-property-decorator";
-import { Film } from '../../types';
+import { Film } from '../../store/models';
 
 @Component
 export default class TimetableRow extends Vue {

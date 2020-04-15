@@ -17,17 +17,16 @@ import {
   Action,
   Mutation
 } from 'vuex-class';
+import { MainModule } from "./store/modules/main";
 
 @Component({
   components: {
     Header
   }
 })
-export default class App extends Vue { 
-  @Action fetchAll;
-
+export default class App extends Vue {
   created() {
-    this.fetchAll();
+    // MainModule.fetchAll();
   }
 }
 </script>

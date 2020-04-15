@@ -3371,6 +3371,11 @@ eslint@^6.7.2:
     text-table "^0.2.0"
     v8-compile-cache "^2.0.3"
 
+esm@^3.0.84:
+  version "3.2.25"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.2.25.tgz#342c18c29d56157688ba5ce31f8431fbb795cc10"
+  integrity sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==
+
 espree@^6.1.2:
   version "6.2.1"
   resolved "https://registry.npm.taobao.org/espree/download/espree-6.2.1.tgz?cache=0&sync_timestamp=1583870100266&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fespree%2Fdownload%2Fespree-6.2.1.tgz#77fc72e1fd744a2052c20f38a5b575832e82734a"
@@ -8512,7 +8517,7 @@ vm-browserify@^1.0.1:
   resolved "https://registry.npm.taobao.org/vm-browserify/download/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha1-eGQcSIuObKkadfUR56OzKobl3aA=
 
-vue-class-component@^7.1.0, vue-class-component@^7.2.2:
+vue-class-component@^7.0.1, vue-class-component@^7.1.0, vue-class-component@^7.2.2:
   version "7.2.3"
   resolved "https://registry.npm.taobao.org/vue-class-component/download/vue-class-component-7.2.3.tgz#a5b1abd53513a72ad51098752e2dedd499807cca"
   integrity sha1-pbGr1TUTpyrVEJh1Li3t1JmAfMo=
@@ -8544,6 +8549,14 @@ vue-loader@^15.8.3:
     loader-utils "^1.1.0"
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
+
+vue-object-merge@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/vue-object-merge/-/vue-object-merge-0.1.8.tgz#6fb994cdff548d6dc4d6cda3a637ba9a8ed13f49"
+  integrity sha512-myO8KiL45NjzR7HLxeu6OEV/Y34O5wWyrJrMgqMxy98VbanrvpHjVPUKA16UevPSR0OE30wynxI73Eyv6e1JNA==
+  dependencies:
+    esm "^3.0.84"
+    vue "^2.5.21"
 
 vue-property-decorator@^8.3.0:
   version "8.4.0"
@@ -8578,10 +8591,23 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.npm.taobao.org/vue-template-es2015-compiler/download/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha1-HuO8mhbsv1EYvjNLsV+cRvgvWCU=
 
-vue@^2.6.11:
+vue@^2.5.21, vue@^2.6.11:
   version "2.6.11"
   resolved "https://registry.npm.taobao.org/vue/download/vue-2.6.11.tgz?cache=0&sync_timestamp=1583528555168&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fvue%2Fdownload%2Fvue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
   integrity sha1-dllNh31LEiNEBuhONSdcbVFBJcU=
+
+vuelidate-property-decorators@^1.0.28:
+  version "1.0.28"
+  resolved "https://registry.yarnpkg.com/vuelidate-property-decorators/-/vuelidate-property-decorators-1.0.28.tgz#4d90e3be0291ca3703ce35fcb76028c673ba4618"
+  integrity sha512-ktb+9bYkTSmUFLi9g7gMGY035F5WvNnBQ/yl1U8MlclcFT65bYU/vBQ5HcZ4T1Ko6IL5wIPD4XJ+KkllKvgycg==
+  dependencies:
+    vue-class-component "^7.0.1"
+    vuelidate "^0.7.4"
+
+vuelidate@^0.7.4:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/vuelidate/-/vuelidate-0.7.5.tgz#ff48c75ae9d24ea24c24e9ea08065eda0a0cba0a"
+  integrity sha512-GAAG8QAFVp7BFeQlNaThpTbimq3+HypBPNwdkCkHZZeVaD5zmXXfhp357dcUJXHXTZjSln0PvP6wiwLZXkFTwg==
 
 vuex-class@^0.3.2:
   version "0.3.2"

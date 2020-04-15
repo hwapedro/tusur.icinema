@@ -7,14 +7,14 @@ class Api {
 
   }
 
-  async query(endpoint: string, conditions: any, limit?: number, skip?: number) {
+  async query<T = any>(endpoint: string, conditions: any, limit?: number, skip?: number): Promise<{ data: T, headers: any }> {
     try {
       const body: any = {
         conditions,
       };
       if (limit) body.limit = limit;
       if (skip) body.skip = skip;
-      const { data, headers } = await axios.post(
+      const { data, headers } = await axios.post<T>(
         `${this.base}${endpoint}${endpoint.slice(-1, 1) === '/' ? 'query' : '/query'}`,
         body,
         { headers: this.getHeaders() });
@@ -24,9 +24,9 @@ class Api {
     }
   }
 
-  async get(endpoint: string, query = {}) {
+  async get<T = any>(endpoint: string, query = {}): Promise<{ data: T, headers: any }> {
     try {
-      const { data, headers } = await axios.get(`${this.base}${endpoint}`, {
+      const { data, headers } = await axios.get<T>(`${this.base}${endpoint}`, {
         headers: this.getHeaders(),
         params: { ...query }
       });
@@ -36,9 +36,9 @@ class Api {
     }
   }
 
-  async post(body: object, endpoint: string, extendHeaders = {}) {
+  async post<T = any>(endpoint: string, body: object, extendHeaders = {}) {
     try {
-      const response = await axios.post(`${this.base}${endpoint}`, body, {
+      const response = await axios.post<T>(`${this.base}${endpoint}`, body, {
         headers: this.getHeaders(extendHeaders)
       });
 
@@ -49,12 +49,12 @@ class Api {
     }
   }
 
-  async put(body: object, endpoint: string) {
+  async put<T = any>(endpoint: string, body: object,) {
     try {
       const {
         headers,
-        data: { data }
-      } = await axios.put(`${this.base}${endpoint}`, body, {
+        data
+      } = await axios.put<T>(`${this.base}${endpoint}`, body, {
         headers: this.getHeaders()
       });
       return { data, headers };
@@ -63,12 +63,12 @@ class Api {
     }
   }
 
-  async delete(body: object, endpoint: string) {
+  async delete<T = any>(body: object, endpoint: string) {
     try {
       const {
         headers,
-        data: { data }
-      } = await axios.delete(`${this.base}${endpoint}`, {
+        data
+      } = await axios.delete<T>(`${this.base}${endpoint}`, {
         data: body,
         headers: this.getHeaders()
       });

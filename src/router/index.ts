@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Home from '../views/Home.vue';
-import Soon from '../views/Soon.vue';
-import Timetable from '../views/Timetable.vue';
+import Home from '@/core/Home/Home.vue';
+import Soon from '@/core/Soon/Soon.vue';
+import Timetable from '@/core/Timetable/Timetable.vue';
+import PickSeat from '@/core/PickSeat/PickSeat.vue';
+import { isDev } from '@/shared/constants';
 
 Vue.use(VueRouter);
 
@@ -11,24 +13,33 @@ export const routes = [
     path: '/',
     name: 'Главная',
     component: Home,
-    meta: { 
-      inHeader: false, 
+    meta: {
+      inHeader: false,
     }
   },
   {
     path: '/soon',
     name: 'Афиша',
     component: Soon,
-    meta: { 
-      inHeader: true, 
+    meta: {
+      inHeader: true,
     }
   },
   {
     path: '/timetable',
     name: 'Расписание',
     component: Timetable,
-    meta: { 
-      inHeader: true, 
+    meta: {
+      inHeader: true,
+    }
+  },
+  {
+    path: '/showtime/:showtimeId',
+    props: true,
+    name: 'Выбор мест',
+    component: PickSeat,
+    meta: {
+      inHeader: isDev ? true : false,
     }
   },
 ];

@@ -17,7 +17,7 @@ import {
   Action,
   Mutation
 } from 'vuex-class';
-import { Film, Genre, Actor } from '../types';
+import { Film, Genre, Actor } from '@/store/models';
 
 @Component
 export default class Timetable extends Vue {

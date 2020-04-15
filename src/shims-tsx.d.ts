@@ -1,6 +1,8 @@
 import Vue, { VNode } from "vue";
 
+
 declare global {
+  type TSFIX = any; 
   namespace JSX {
     // tslint:disable no-empty-interface
     interface Element extends VNode {}
@@ -9,5 +11,9 @@ declare global {
     interface IntrinsicElements {
       [elem: string]: any;
     }
+  }
+
+  interface Window {
+    paypal: any;
   }
 }
