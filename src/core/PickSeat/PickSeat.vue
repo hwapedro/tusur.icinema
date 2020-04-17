@@ -16,8 +16,55 @@
           </div>
         </div>
         <div class="title is-3">Итого: {{totalSum}}</div>
+        <hr>
+        <div class="form-control">
+          <Label>Имя</Label>
+          <Input
+            type="text"
+            @blur="$v.firstName.$touch()"
+            v-model="firstName"
+          />
+          <FormErrors
+            :validation="$v.firstName"
+            :errorTexts="{
+              required: 'Введите имя',
+            }"
+          />
+        </div>
+        <div class="form-control">
+          <Label>Фамилия</Label>
+          <Input
+            type="text"
+            @blur="$v.lastName.$touch()"
+            v-model="lastName"
+          />
+          <FormErrors
+            :validation="$v.lastName"
+            :errorTexts="{
+              required: 'Введите фамилию',
+            }"
+          />
+        </div>
+                <div class="form-control">
+          <Label>Телефон</Label>
+          <Input
+            type="text"
+            @blur="$v.phone.$touch()"
+            v-model="phone"
+          />
+          <FormErrors
+            :validation="$v.phone"
+            :errorTexts="{
+              required: 'Введите телефон в формате +7ХХХХХХХХХХХ',
+              length: 'Странный телефон',
+              format: 'Введите телефон в формате +7ХХХХХХХХХХХ',  
+            }"
+          />
+        </div>
+
         <button
           class="button is-primary"
+          :disabled="$v.$anyError"
           v-if="!isPaying || payUntil > new Date()"
           @click="prepareForPayment"
         >Перейти к оплате</button>
@@ -37,17 +84,47 @@ import {
 } from 'vuex-class';
 import { MainModule } from '../../store/modules/main';
 import api from '../../api';
+import { Validate, Validations } from 'vuelidate-property-decorators';
+import { required, minLength, maxLength } from 'vuelidate/lib/validators';
+import Input from '../../shared/components/Input.vue';
+import Label from '../../shared/components/Label.vue';
+import FormErrors from '../../shared/components/FormErrors.vue';
 
 @Component({
-
+  components: {
+    Input,
+    Label,
+    FormErrors
+  }
 })
 export default class PickSeat extends Vue {
   @Prop({ default: '' }) showtimeId!: string;
   name = 'PickSeat';
   // form
+  firstName = '';
+  lastName = '';
+  phone = '';
+
+  @Watch('phone')
+  wph() {
+    console.log(this.phone);
+  }
+
+  @Validations()
+  validations = {
+    firstName: { required },
+    lastName: { required },
+    phone: {
+      required,
+      format(val) {
+        return /^((\+7)|(8))\d{10}$/.test(val);
+      }
+    }
+  }
 
   isPaying: boolean = false;
-  payUntil!: Date;
+  payUntil: Date = new Date();
+  blockId: string = '';
 
   selectedPlaces: TSFIX[] = [{
     row: 0,
@@ -58,7 +135,8 @@ export default class PickSeat extends Vue {
   }];
 
   created() {
-    MainModule.getShowtime(this.showtimeId);
+    if (!MainModule.showtimes[this.showtimeId])
+      MainModule.getShowtime(this.showtimeId);
   }
 
   get showtime() {
@@ -80,16 +158,23 @@ export default class PickSeat extends Vue {
   }
 
   async prepareForPayment() {
+    await this.$v.$touch();
+    if (this.$v.$anyError) {
+      return false;
+    }
     const { data } = await api.post('payment/start', {
       seats: this.selectedPlaces,
       showtimeId: this.showtimeId
     });
     if (data.success) {
       this.payUntil = new Date(Date.now() + data.blockDuration);
+      this.blockId = data.blockId;
       this.isPaying = true;
       this.renderPaymentButton();
     } else {
-      alert('Cannot pay')
+      if (status === 'taken') {
+        alert('Cannot pay. Seats are blocked ' + JSON.stringify(data.seats));
+      }
     }
   }
 
@@ -117,10 +202,17 @@ export default class PickSeat extends Vue {
         });
       },
       onApprove: async (data, actions) => {
-        const details = await actions.order.capture()
-        // This function shows a transaction success message to your buyer.
-        alert('Transaction completed by ' + details.payer.name.given_name);
-        
+        console.log(data);
+        const { data: captureResult } = await api.post('payment/submit', {
+          showtimeId: this.showtimeId,
+          blockId: this.blockId,
+          firstName: this.firstName,
+          lastName: this.lastName,
+          orderedItems: [],
+          phone: this.phone,
+          orderId: data.orderID,
+        });
+        console.log(captureResult);
       }
     }).render('#paypal-button');
   }

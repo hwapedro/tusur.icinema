@@ -23,6 +23,7 @@ export default class Main extends VuexModule {
   hallCells: ModelMap<HallCell> = {};
   shops: ModelMap<Shop> = {};
   showtimes: ModelMap<Showtime> = {};
+  dateShowtimes: { [key: string]: ModelMap<Showtime> } = {};
 
   @Mutation
   setModels({ model, data }: {
@@ -47,24 +48,63 @@ export default class Main extends VuexModule {
     stateMerge(this.hallCells, newData);
   }
 
+  @Mutation
+  setDateShowtimes(showtimes) {
+    const newData = {};
+    for (const entry of showtimes) {
+      const { date, showtimes } = entry;
+      newData[date] = showtimes;
+    }
+    stateMerge(this.dateShowtimes, newData);
+  }
+
   @Action
   async getShowtime(id: string) {
-    const { data } = await api.get(`schedule/showtime/${id}`);
-    if (data.success) {
-      this.setModels({
-        model: 'halls',
-        data: [data.hall],
-      });
-      this.setModels({
-        model: 'films',
-        data: [data.film],
-      });
-      this.setHallCells(data.hallCells);
-      this.setModels({
-        model: 'showtimes',
-        data: [data.showtime],
-      });
+    try {
+      const { data } = await api.get(`schedule/showtime/${id}`);
+      if (data.success) {
+        this.setModels({
+          model: 'halls',
+          data: [data.hall],
+        });
+        this.setModels({
+          model: 'films',
+          data: [data.film],
+        });
+        this.setHallCells(data.hallCells);
+        this.setModels({
+          model: 'showtimes',
+          data: [data.showtime],
+        });
+      }
+    } catch (error) {
+
     }
+  }
+
+  @Action
+  async fetchTimetable(from: Date) {
+    const { data: {
+      showtimes,
+      films,
+      halls,
+      hallCells
+    } } = await api.get<any>('schedule/showtime', {
+      from: from.toISOString().slice(0, 10),
+    });
+    this.setDateShowtimes(showtimes);
+    this.setModels({
+      model: 'films',
+      data: films,
+    });
+    this.setModels({
+      model: 'hallCells',
+      data: hallCells,
+    });
+    this.setModels({
+      model: 'halls',
+      data: halls,
+    });
   }
 
   @Action

@@ -8604,7 +8604,7 @@ vuelidate-property-decorators@^1.0.28:
     vue-class-component "^7.0.1"
     vuelidate "^0.7.4"
 
-vuelidate@^0.7.4:
+vuelidate@^0.7.4, vuelidate@^0.7.5:
   version "0.7.5"
   resolved "https://registry.yarnpkg.com/vuelidate/-/vuelidate-0.7.5.tgz#ff48c75ae9d24ea24c24e9ea08065eda0a0cba0a"
   integrity sha512-GAAG8QAFVp7BFeQlNaThpTbimq3+HypBPNwdkCkHZZeVaD5zmXXfhp357dcUJXHXTZjSln0PvP6wiwLZXkFTwg==
