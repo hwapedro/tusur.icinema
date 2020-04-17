@@ -190,6 +190,9 @@ export default class PickSeat extends Vue {
   }
   async renderPaymentButton() {
     await this.waitForPaypal();
+    const ppb = document.querySelector('#paypal-button > *');
+    if (ppb)
+      ppb.remove()
     window.paypal.Buttons({
       createOrder: (data, actions) => {
         return actions.order.create({
