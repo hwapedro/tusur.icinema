@@ -1,7 +1,7 @@
 <template>
   <div class="columns">
     <div class="column">
-      <Header />
+      <Header/>
       <router-view></router-view>
     </div>
   </div>
@@ -10,7 +10,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import './assets/bulma.min.css';
-import Header from './components/Header.vue';
+import Header from './shared/components/Header.vue';
 import {
   State,
   Getter,
@@ -26,7 +26,7 @@ import { MainModule } from "./store/modules/main";
 })
 export default class App extends Vue {
   created() {
-    // MainModule.fetchAll();
+    MainModule.fetchAll();
   }
 }
 </script>

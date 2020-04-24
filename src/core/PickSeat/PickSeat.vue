@@ -144,7 +144,6 @@ export default class PickSeat extends Vue {
   }
 
   get totalSum() {
-    console.log(this.showtime);
     const hall = MainModule.halls[this.showtime ? this.showtime.hall : 'null'];
     if (!hall) {
       return '-';
@@ -158,8 +157,8 @@ export default class PickSeat extends Vue {
   }
 
   async prepareForPayment() {
-    await this.$v.$touch();
-    if (this.$v.$anyError) {
+    await (this as any).$v.$touch();
+    if ((this as any).$v.$anyError) {
       return false;
     }
     const { data } = await api.post('payment/start', {

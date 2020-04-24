@@ -11,30 +11,40 @@
             @click="setDate(d)"
           >{{d}}</button>
         </div>
+
+        <div class="timetable">
+          <TimetableHeader
+            :startHour="startHour"
+            :endHour="endHour"
+          />
+        </div>
         <div
+          class="timetable-row"
           v-for="(filmShowtimesObj, filmId) in showtimes[date]"
           :key="filmId"
         >
-          <div
-            class="showtime-row"
-            v-for="(showtime) in filmShowtimesObj"
-            :key="showtime._id"
-          >
+          <div class="left">
             <div>Film: {{ films[filmId].name }}</div>
-            <div>Time: {{ new Date(showtime.time).toLocaleString() }}</div>
-            <div>Hall: {{ halls[showtime.hall].name }}</div>
-            <router-link
-              :to="`/showtime/${showtime._id}`"
-              v-slot="{ href, route, navigate}"
+          </div>
+          <div class="right">
+            <div
+              class="hall-showtimes"
+              v-for="(showtime) in filmShowtimesObj"
+              :key="showtime._id"
             >
-              <a
-                class="button is-primary"
-                @click="navigate"
-                :href="href"
-              >К выбору мест</a>
-            </router-link>
-
-            <hr>
+              <div>Time: {{ new Date(showtime.time).toLocaleString() }}</div>
+              <div>Hall: {{ halls[showtime.hall].name }}</div>
+              <router-link
+                :to="`/showtime/${showtime._id}`"
+                v-slot="{ href, route, navigate}"
+              >
+                <a
+                  class="button is-primary"
+                  @click="navigate"
+                  :href="href"
+                >К выбору мест</a>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -43,25 +53,40 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Inject, } from "vue-property-decorator";
+import { Component, Prop, Vue, Inject, Watch, } from "vue-property-decorator";
 import {
   State,
   Getter,
   Action,
   Mutation
 } from 'vuex-class';
-import { Film, Genre, Actor } from '@/store/models';
 import { MainModule } from "../../store/modules/main";
+import { Debounce } from 'vue-debounce-decorator';
+import TimetableHeader from "./TimetableHeader.vue";
 
-@Component
+@Component({
+  components: {
+    TimetableHeader
+  }
+})
 export default class Timetable extends Vue {
   date: string = '';
 
   mounted() {
-    MainModule.fetchTimetable(new Date(Date.now() - 1000 * 3600 * 24 * 5))
-      .then(r => {
-        this.date = Object.keys(MainModule.dateShowtimes)[0];
-      });
+    if (MainModule.cinema) {
+      this.fetchTimetable();
+    }
+  }
+
+  @Watch('cinema')
+  onCinemaChange() {
+    this.fetchTimetable();
+  }
+
+  @Debounce({ time: 500 })
+  async fetchTimetable() {
+    await MainModule.fetchTimetable(new Date())
+    this.date = Object.keys(MainModule.dateShowtimes)[0];
   }
 
   get films() {
@@ -73,14 +98,39 @@ export default class Timetable extends Vue {
   get halls() {
     return MainModule.halls;
   }
+  get cinema() {
+    return MainModule.cinema;
+  }
+
+  get startHour() {
+    return 0;
+  }
+  get endHour() {
+    return 23;
+  }
 
   setDate(date) {
     this.date = date;
   }
-
 }
 
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+$left: 25%;
+.timetable {
+  
+  .left {
+    width: $left;
+    float: left;
+  }
+  .right {
+    width: 100% - $left;
+    float: right;
+  }
+
+  .row {
+    width: 100%;
+  }
+}
 </style>

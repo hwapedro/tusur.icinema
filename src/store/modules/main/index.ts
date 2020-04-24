@@ -7,6 +7,9 @@ import store from '@/store';
 import { stateMerge } from 'vue-object-merge';
 
 export interface IMainState {
+  // id of selected cinema
+  cinema: string;
+
   films: ModelMap<Film>;
   cinemas: ModelMap<Cinema>;
   halls: ModelMap<Hall>;
@@ -17,6 +20,7 @@ export interface IMainState {
 
 @Module({ dynamic: true, store, name: 'main' })
 export default class Main extends VuexModule {
+  cinema: string = '';
   films: ModelMap<Film> = {};
   cinemas: ModelMap<Cinema> = {};
   halls: ModelMap<Hall> = {};
@@ -91,6 +95,7 @@ export default class Main extends VuexModule {
       hallCells
     } } = await api.get<any>('schedule/showtime', {
       from: from.toISOString().slice(0, 10),
+      cinema: this.cinema,
     });
     this.setDateShowtimes(showtimes);
     this.setModels({
@@ -127,6 +132,13 @@ export default class Main extends VuexModule {
       });
     }
     return data;
+  }
+
+  @MutationAction({ mutate: ['cinema'] })
+  async setCinema(value: string) {
+    return {
+      cinema: value
+    };
   }
 }
 

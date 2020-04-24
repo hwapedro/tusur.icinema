@@ -42,6 +42,23 @@
             :to="route.path"
           >{{ route.name }}</router-link>
         </div>
+        <div class="navbar-end">
+          <div class="select">
+            <select v-model="cinema">
+              <option
+                disabled
+                value=""
+              >Выберите кинотеатр</option>
+              <option
+                v-for="(cinema, cinemaId) in cinemas"
+                :key="cinemaId"
+                :value="cinemaId"
+              >
+                {{ cinema.name }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
     </nav>
   </div>
@@ -49,7 +66,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Inject, } from "vue-property-decorator";
-import { routes } from '../router';
+import { routes } from '../../router';
+import { MainModule } from "../../store/modules/main";
 
 @Component
 export default class Header extends Vue {
@@ -57,6 +75,17 @@ export default class Header extends Vue {
 
   get routesInHeader() {
     return this.routes.filter(route => route ? route.meta.inHeader : false);
+  }
+
+  get cinemas() {
+    return MainModule.cinemas;
+  }
+
+  get cinema() {
+    return MainModule.cinema;
+  }
+  set cinema(val) {
+    MainModule.setCinema(val);
   }
 }
 </script>
