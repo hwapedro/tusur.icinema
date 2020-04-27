@@ -1,5 +1,5 @@
 import { Module, VuexModule, Mutation, Action, MutationAction, getModule } from 'vuex-module-decorators';
-import { Film, Cinema, Hall, Shop, Showtime, HallCell } from '@/store/models';
+import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre } from '@/store/models';
 import api from '@/api';
 import { ModelMap } from '@/types';
 import { Response } from './types';
@@ -27,6 +27,8 @@ export default class Main extends VuexModule {
   hallCells: ModelMap<HallCell> = {};
   shops: ModelMap<Shop> = {};
   showtimes: ModelMap<Showtime> = {};
+  ageRules: ModelMap<AgeRule> = {};
+  genres: ModelMap<Genre> = {};
   dateShowtimes: { [key: string]: ModelMap<Showtime> } = {};
 
   @Mutation
@@ -127,8 +129,16 @@ export default class Main extends VuexModule {
       });
       this.setHallCells(data.hallCells);
       this.setModels({
-        model: 'cinemas',
+        model: 'shops',
         data: data.shops
+      });
+      this.setModels({
+        model: 'ageRules',
+        data: data.ageRules
+      });
+      this.setModels({
+        model: 'genres',
+        data: data.genres
       });
     }
     return data;

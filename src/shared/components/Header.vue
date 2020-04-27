@@ -10,13 +10,8 @@
           class="navbar-item"
           href="/"
         >
-          <img
-            src="https://bulma.io/images/bulma-logo.png"
-            width="112"
-            height="28"
-          >
+          {{ cinema ? cinemas[cinema].name : 'Cinema' }}
         </a>
-
         <a
           role="button"
           class="navbar-burger burger"

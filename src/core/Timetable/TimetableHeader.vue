@@ -1,13 +1,14 @@
 <template>
   <div class="timetable-header">
-    <div class="right">
-      <div class="level">
-        <div class="level-item"
-          v-for="hour in hourRange"
-          :key="hour"
-        >{{hour}}<sup>00</sup></div>
+    <div class="columns">
+      <div class="column is-offset-4">
+        <div class="level">
+          <div class="level-item"
+            v-for="hour in hourRange"
+            :key="hour"
+          >{{hour}}<sup>00</sup></div>
+        </div>
       </div>
-
     </div>
   </div>
 </template>

@@ -1,0 +1,1 @@
+export const formatPrice = (number: number, suffix: boolean) => `${(number / 100).toFixed(2)}${suffix ? ' руб.' : ''}`;
