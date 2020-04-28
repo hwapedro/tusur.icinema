@@ -13,7 +13,8 @@
     "noImplicitAny": false,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env",
+      "jquery"
     ],
     "paths": {
       "~/*": [

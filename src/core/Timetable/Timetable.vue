@@ -51,27 +51,35 @@
           </div>
           <div class="column">
             <!-- right part -->
-            <div
-              v-for="(filmShowtimesObj, hallId) in filmHallsObj"
-              :key="hallId"
-            >
+            <div class="halls">
               <div
-                class="hall-showtimes"
-                v-for="(showtime) in filmShowtimesObj"
-                :key="showtime._id"
+                v-for="(filmShowtimesObj, hallId, hallIndex) in filmHallsObj"
+                :key="hallId"
+                class="hall-row"
               >
-                <div>Time: {{ new Date(showtime.time).toLocaleString() }}</div>
-                <div>Hall: {{ halls[showtime.hall] && halls[showtime.hall].name }}</div>
-                <router-link
-                  :to="`/showtime/${showtime._id}`"
-                  v-slot="{ href, route, navigate}"
+                <div
+                  class="showtime"
+                  v-for="(showtime) in filmShowtimesObj"
+                  :key="showtime._id"
                 >
-                  <a
-                    class="button is-primary"
-                    @click="navigate"
-                    :href="href"
-                  >К выбору мест</a>
-                </router-link>
+                  <span
+                    class="showtime__bubble tag is-normal"
+                    :style="calculateShowtimeBubbleCss(showtime, hallIndex)"
+                  >{{ formatShowtimeBubbleTime(showtime.time) }}</span>
+                  <!-- modal window with seat info and payment button -->
+                  <!-- <div>Time: {{ new Date(showtime.time).toLocaleString() }}</div>
+                  <div>Hall: {{ halls[showtime.hall] && halls[showtime.hall].name }}</div>
+                  <router-link
+                    :to="`/showtime/${showtime._id}`"
+                    v-slot="{ href, route, navigate}"
+                  >
+                    <a
+                      class="button is-primary"
+                      @click="navigate"
+                      :href="href"
+                    >К выбору мест</a>
+                  </router-link> -->
+                </div>
               </div>
             </div>
           </div>
@@ -95,6 +103,8 @@ import TimetableHeader from "./TimetableHeader.vue";
 import { ModelMap } from "../../types";
 import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
 import { formatPrice } from '../../shared/utils';
+import moment from 'moment';
+import { HOURS_MERGED } from '../../shared/constants';
 
 @Component({
   components: {
@@ -162,6 +172,36 @@ export default class Timetable extends Vue {
     return min === max ? formatPrice(min, true) : `${formatPrice(min, false)} - ${formatPrice(max, true)}`
   }
 
+  formatShowtimeBubbleTime(time: number | string) {
+    return moment(time).format('HH:mm');
+  }
+  calculateShowtimeBubbleCss(showtime: any, hallIndex) {
+    // todo: color
+    const color = this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)];
+    const time = moment(showtime.time);
+    const maxHour = this.endHour + 1;
+
+    const hourWidth = window.$('.hour').eq(0).outerWidth();
+    const hourish = moment.duration(time.hours() * 60 + time.minutes(), 'minutes').asHours();
+    console.log(hourish, hourWidth);
+    const offset = hourish / maxHour * 100; // %
+    // const offset = hourish * hourWidth / HOURS_MERGED;
+    return {
+      'background-color': color,
+      'left': `${offset}%`,
+    }
+  }
+
+  get hallColors(): string[] {
+    return [
+      '#17C3B2',
+      '#ffcb77',
+      '#557C9D',
+      '#fe6d73',
+      '#F6C0D0',
+    ];
+  }
+
   get films(): ModelMap<Film> {
     return MainModule.films;
   }
@@ -211,6 +251,19 @@ export default class Timetable extends Vue {
     color: #ad2cbe;
   }
   &__value {
+  }
+}
+.halls {
+  margin-top: 100px;
+  .hall-row {
+    position: relative;
+    width: 100%;
+    height: 30px;
+
+    .showtime__bubble {
+      cursor: pointer;
+      position: absolute;
+    }
   }
 }
 </style>
