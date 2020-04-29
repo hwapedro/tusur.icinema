@@ -1,18 +1,21 @@
+interface WithOid {
+  _id: string;
+}
 
-export interface AgeRule {
+export interface AgeRule extends WithOid {
   name: string;
 }
 
-export interface Actor {
+export interface Actor extends WithOid {
   name: string;
   bio: string;
 }
 
-export interface Genre {
+export interface Genre extends WithOid {
   name: string;
 }
 
-export interface Film {
+export interface Film extends WithOid {
   name: string;
   description: string;
   // in minutes
@@ -25,7 +28,7 @@ export interface Film {
   genres: Genre[];
 }
 
-export interface Cinema {
+export interface Cinema extends WithOid {
   name: string;
   address: string;
   halls: Hall[];
@@ -34,30 +37,30 @@ export interface Cinema {
   showtimes: Showtime[];
 }
 
-export interface Showtime {
+export interface Showtime extends WithOid {
   time: Date;
   film: string;
   hall: string;
 }
 
-export interface HallCell {
+export interface HallCell extends WithOid {
   name: string;
   price: number;
   index: number;
 }
 
-export interface Hall {
+export interface Hall extends WithOid {
   name: string;
   structure: number[][];
 }
 
-export interface ShopItem {
+export interface ShopItem extends WithOid {
   name: string;
   price: number;
   inStock: boolean;
 }
 
-export interface Shop {
+export interface Shop extends WithOid {
   name: string;
   description: string;
   items: ShopItem[];
