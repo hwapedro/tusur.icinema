@@ -19,7 +19,7 @@
           <div
             class="container timetable-entry"
             v-for="(filmHallsObj, filmId) in showtimes[date]"
-            :key="filmId"
+            :key="date + filmId"
           >
             <div class="timetable-row columns">
               <div class="column is-4 left">
@@ -53,6 +53,7 @@
                 <TimeOverlay
                   :startHour="startHour"
                   :endHour="endHour"
+                  :date="date"
                   :hourWidth="hourWidth"
                 />
                 <div class="halls">

@@ -1,5 +1,13 @@
 <template>
   <div class="schedule-overlay">
+    <div
+      class="cover"
+      v-if="active"
+      :style="{
+        width: animateActive ? `${coverWidth}%` : 0, 
+      }"
+    >
+    </div>
     <ul class="lines">
       <li
         class="lines__block"
@@ -26,6 +34,22 @@ export default class TimeOverlay extends Vue {
   @Prop() startHour!: number;
   @Prop() endHour!: number;
   @Prop() hourWidth!: number;
+  @Prop() date: string;
+  active: boolean = false;
+  animateActive: boolean = false;
+
+  mounted() {
+    // check time 
+    if (this.date === moment().format('YYYY-MM-DD')) {
+      this.active = true;
+      setTimeout(() => this.animateActive = true, 140);
+    }
+  }
+
+  get coverWidth(): number {
+    const now = moment();
+    return moment.duration(now.hours() * 60 + now.minutes(), 'minutes').asHours() / (this.endHour + 1) * 100;
+  }
 
   get hourRange() {
     return Array(this.endHour - this.startHour).fill(0)
@@ -42,6 +66,18 @@ export default class TimeOverlay extends Vue {
   position: absolute;
   left: 0;
   top: 0;
+
+  .cover {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-right: 2px solid #4643c3;
+    height: 100%;
+    z-index: 50000;
+    width: 0;
+    transition: width 1s cubic-bezier(0.53, 1.56, 0.68, 0.92);
+  }
 
   .lines {
     height: 100%;
