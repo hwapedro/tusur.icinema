@@ -7,6 +7,9 @@
             class="hour"
             v-for="hour in hourRange"
             :key="hour"
+            :style="{
+              width: `${itemWidth}px` 
+            }"
           >{{hour}}<sup>00</sup></div>
         </div>
       </div>
@@ -22,6 +25,7 @@ import { HOURS_MERGED } from '../../shared/constants';
 export default class TimetableHeader extends Vue {
   @Prop() startHour!: number;
   @Prop() endHour!: number;
+  @Prop() itemWidth!: number;
 
   mounted() {
 

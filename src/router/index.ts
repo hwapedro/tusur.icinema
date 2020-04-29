@@ -39,7 +39,7 @@ export const routes = [
     name: 'Выбор мест',
     component: PickSeat,
     meta: {
-      inHeader: isDev ? true : false,
+      inHeader: false,
     }
   },
 ];

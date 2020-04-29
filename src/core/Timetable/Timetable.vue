@@ -10,28 +10,28 @@
           @set-date="setDate"
         />
 
+        <TimetableHeader
+          :startHour="startHour"
+          :endHour="endHour"
+          :itemWidth="headerItemWidth"
+        />
         <div class="timetable-wrap">
-          <TimetableHeader
-            :startHour="startHour"
-            :endHour="endHour"
-          />
-          <div class="container timetable-entry"
+          <div
+            class="container timetable-entry"
             v-for="(filmHallsObj, filmId) in showtimes[date]"
             :key="filmId"
           >
-            <div
-              class="timetable-row columns"
-            >
+            <div class="timetable-row columns">
               <div class="column is-4 left">
                 <!-- left part of row -->
-                <div class="columns">
-                  <div class="column is-5">
+                <div class="row-left__wrap">
+                  <div class="row-left__img">
                     <img
                       :src="films[filmId].image"
                       alt="film image"
                     >
                   </div>
-                  <div class="column">
+                  <div class="row-left__info">
                     <div class="film__title title is-3">{{ films[filmId].name }}</div>
                     <div class="film-prop">
                       <div class="film-prop__title subtitle is-5 is-marginless">Жанр:</div>
@@ -50,6 +50,11 @@
               </div>
               <div class="column right">
                 <!-- right part -->
+                <TimeOverlay
+                  :startHour="startHour"
+                  :endHour="endHour"
+                  :hourWidth="hourWidth"
+                />
                 <div class="halls">
                   <div
                     v-for="(filmShowtimesObj, hallId, hallIndex) in filmHallsObj"
@@ -99,6 +104,7 @@ import { Debounce } from 'vue-debounce-decorator';
 import TimetableHeader from "./TimetableHeader.vue";
 import Calendar from "./Calendar.vue";
 import ShowtimeModal from "./ShowtimeModal.vue";
+import TimeOverlay from "./TimeOverlay.vue";
 import { ModelMap } from "../../types";
 import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
 import { formatPrice } from '../../shared/utils';
@@ -110,13 +116,15 @@ import { Bus } from '../../shared/bus';
   components: {
     TimetableHeader,
     Calendar,
-    ShowtimeModal
+    ShowtimeModal,
+    TimeOverlay
   }
 })
 export default class Timetable extends Vue {
   date: string = '';
   modalState: { [showtime: string]: boolean } = {};
   bubbleWidth = 50;
+  headerItemWidth = 65.33;
 
   created() {
     Bus.$on('hide-modal', this.onHideModal);
@@ -242,7 +250,9 @@ export default class Timetable extends Vue {
   }
 
   get hourWidth() {
-    return window.$('.hour').eq(0).outerWidth();
+    return this.headerItemWidth;
+    return parseInt(window.getComputedStyle(window.$('.hour')[0]).width);
+    // return window.$('.hour').eq(0).outerWidth();
   }
 
   get films(): ModelMap<Film> {
@@ -282,23 +292,37 @@ export default class Timetable extends Vue {
 </script>
 
 <style lang="scss">
+.timetable-wrap {
+  position: relative;
+}
 .timetable-entry {
   $border-color: #8d8d8d;
-  border-bottom: 1px solid $border-color;
-  margin-bottom: 1rem;
+  $border-w: 1px;
+  $bottom-space: 0.76rem;
+  // border-bottom: $border-w solid $border-color;
+  padding-bottom: $bottom-space;
+  margin-bottom: $bottom-space;
+
   .left {
-    border-right: 1px solid $border-color;
+    border-right: $border-w solid $border-color;
+    .row-left__wrap {
+      display: flex;
+      flex-direction: row;
+    }
+    .row-left__img {
+      padding: 0.5rem;
+      flex: 41;
+    }
+    .row-left__info {
+      flex: 59;
+    }
   }
   .right {
-
+    padding: 0; 
+    position: relative;
   }
 }
-.timetable-row {
 
-}
-.timetable-entry {
-  background-color: #fafafa;
-}
 .film-prop {
   margin-bottom: 0.5rem;
   &__title {
