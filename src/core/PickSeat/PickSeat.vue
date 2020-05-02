@@ -1,77 +1,85 @@
 <template>
-  <div class="container">
-    <div class="columns">
-      <div class="column is-9">
-        <h1 class="title">Выберите места</h1>
-        <div>TODO seat pick</div>
-      </div>
-      <div class="column is-3">
-        <h2 class="title">Платите</h2>
-        <div>
-          <div
-            v-for="(place) in selectedPlaces"
-            :key="`${place.row}-${place.cell}`"
-          >
-            <div class="title is-4">Ряд {{place.row + 1}}, место {{place.cell + 1}} </div>
-          </div>
-        </div>
-        <div class="title is-3">Итого: {{totalSum}}</div>
-        <hr>
-        <div class="form-control">
-          <Label>Имя</Label>
-          <Input
-            type="text"
-            @blur="$v.firstName.$touch()"
-            v-model="firstName"
+  <Loader :loading="!showtime || !showtime.hall || !halls[showtime.hall]">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-9">
+          <h1 class="title">Выберите места</h1>
+          <SeatPicker
+            :disabled="isPaying"
+            :showtime="showtime"
+            :hall="halls[showtime ? showtime.hall : '__hehe_xd']"
+            :hallCells="hallCells"
           />
-          <FormErrors
-            :validation="$v.firstName"
-            :errorTexts="{
+        </div>
+        <div class="column is-3">
+          <h2 class="title">Платите</h2>
+          <div>
+            <div
+              v-for="(place) in selectedPlaces"
+              :key="`${place.row}-${place.cell}`"
+            >
+              <div class="title is-4">Ряд {{place.row + 1}}, место {{place.cell + 1}} </div>
+            </div>
+          </div>
+          <div class="title is-3">Итого: {{totalSum}}</div>
+          <hr>
+          <div class="form-control">
+            <Label>Имя</Label>
+            <Input
+              type="text"
+              @blur="$v.firstName.$touch()"
+              v-model="firstName"
+            />
+            <FormErrors
+              :validation="$v.firstName"
+              :errorTexts="{
               required: 'Введите имя',
             }"
-          />
-        </div>
-        <div class="form-control">
-          <Label>Фамилия</Label>
-          <Input
-            type="text"
-            @blur="$v.lastName.$touch()"
-            v-model="lastName"
-          />
-          <FormErrors
-            :validation="$v.lastName"
-            :errorTexts="{
+            />
+          </div>
+          <div class="form-control">
+            <Label>Фамилия</Label>
+            <Input
+              type="text"
+              @blur="$v.lastName.$touch()"
+              v-model="lastName"
+            />
+            <FormErrors
+              :validation="$v.lastName"
+              :errorTexts="{
               required: 'Введите фамилию',
             }"
-          />
-        </div>
-                <div class="form-control">
-          <Label>Телефон</Label>
-          <Input
-            type="text"
-            @blur="$v.phone.$touch()"
-            v-model="phone"
-          />
-          <FormErrors
-            :validation="$v.phone"
-            :errorTexts="{
+            />
+          </div>
+          <div class="form-control">
+            <Label>Телефон</Label>
+            <Input
+              type="text"
+              @blur="$v.phone.$touch()"
+              v-model="phone"
+            />
+            <FormErrors
+              :validation="$v.phone"
+              :errorTexts="{
               required: 'Введите телефон в формате +7ХХХХХХХХХХХ',
               length: 'Странный телефон',
               format: 'Введите телефон в формате +7ХХХХХХХХХХХ',  
             }"
-          />
+            />
+          </div>
+          <button
+            class="button is-primary is-fullwidth"
+            style="margin-top: 1rem;"
+            :disabled="$v.$anyError || !selectedPlaces.length"
+            v-if="!isPaying || payUntil > new Date()"
+            @click="prepareForPayment"
+          >Перейти к оплате</button>
+          <hr v-if="isPaying">
+          <div id="paypal-button"></div>
         </div>
-
-        <button
-          class="button is-primary"
-          :disabled="$v.$anyError"
-          v-if="!isPaying || payUntil > new Date()"
-          @click="prepareForPayment"
-        >Перейти к оплате</button>
-        <div id="paypal-button"></div>
       </div>
     </div>
-  </div>
+  </Loader>
 </template>
 
 <script lang="ts">
@@ -88,17 +96,28 @@ import { Validate, Validations } from 'vuelidate-property-decorators';
 import { required, minLength, maxLength } from 'vuelidate/lib/validators';
 import Input from '../../shared/components/Input.vue';
 import Label from '../../shared/components/Label.vue';
+import Loader from '../../shared/components/Loader.vue';
 import FormErrors from '../../shared/components/FormErrors.vue';
+import { ModelMap } from "../../types";
+import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
+import { formatPrice } from '../../shared/utils';
+import moment from 'moment';
+import { HOURS_MERGED } from '../../shared/constants';
+import { Bus } from '../../shared/bus';
+import SeatPicker from './SeatPicker.vue';
 
 @Component({
   components: {
     Input,
     Label,
-    FormErrors
+    FormErrors,
+    Loader,
+    SeatPicker
   }
 })
 export default class PickSeat extends Vue {
-  @Prop({ default: '' }) showtimeId!: string;
+  @Prop() showtimeId!: string;
+
   name = 'PickSeat';
   // form
   firstName = '';
@@ -126,35 +145,78 @@ export default class PickSeat extends Vue {
   payUntil: Date = new Date();
   blockId: string = '';
 
-  selectedPlaces: TSFIX[] = [{
-    row: 0,
-    cell: 0,
-  }, {
-    row: 0,
-    cell: 1,
-  }];
+  selectedPlaces: { row: number, cell: number }[] = [];
 
   created() {
-    if (!MainModule.showtimes[this.showtimeId])
+    if (!this.showtimes[this.showtimeId])
       MainModule.getShowtime(this.showtimeId);
+
+    Bus.$on('select-seat', this.onSeatSelect);
+    Bus.$on('deselect-seat', this.onSeatDeselect);
+  }
+  destroyed() {
+    Bus.$off('select-seat');
+    Bus.$off('deselect-seat');
+  }
+
+  onSeatSelect({ row, cell }) {
+    if (this.isPaying)
+      return;
+    this.selectedPlaces.push({
+      row,
+      cell,
+    });
+  }
+  onSeatDeselect({ row, cell }) {
+    if (this.isPaying)
+      return;
+    const pos = this.selectedPlaces.findIndex(seat => seat.row === row && seat.cell === cell);
+    if (pos > -1) {
+      this.selectedPlaces.splice(pos, 1);
+    }
   }
 
   get showtime() {
-    return MainModule.showtimes[this.showtimeId];
+    return this.showtimes[this.showtimeId];
   }
+  get films(): ModelMap<Film> {
+    return MainModule.films;
+  }
+  get showtimes() {
+    return MainModule.showtimes;
+  }
+  get halls(): ModelMap<Hall> {
+    return MainModule.halls;
+  }
+  get hallCells(): ModelMap<HallCell> {
+    return MainModule.hallCells;
+  }
+  get genres(): ModelMap<Genre> {
+    return MainModule.genres;
+  }
+  get ageRules(): ModelMap<AgeRule> {
+    return MainModule.ageRules;
+  }
+  get cinema(): string {
+    return MainModule.cinema;
+  }
+
 
   get totalSum() {
     const hall = MainModule.halls[this.showtime ? this.showtime.hall : 'null'];
     if (!hall) {
       return '-';
     }
-    return this.selectedPlaces.reduce((acc, curr) => acc + MainModule.hallCells[hall.structure[curr.row][curr.cell]].price / 100, 0);
+    return formatPrice(this.selectedPlaces.reduce((acc, curr) => {
+      const cell = MainModule.hallCells[hall.structure[curr.row][curr.cell]];
+      return acc + (cell ? cell.price : 0);
+    }, 0), true);
   }
 
-  @Watch('selectedPlaces')
-  onSelectedPlacesChange() {
-    this.renderPaymentButton();
-  }
+  // @Watch('selectedPlaces')
+  // onSelectedPlacesChange() {
+  //   this.renderPaymentButton();
+  // }
 
   async prepareForPayment() {
     await (this as any).$v.$touch();

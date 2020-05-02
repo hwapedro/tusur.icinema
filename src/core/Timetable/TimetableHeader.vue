@@ -8,7 +8,6 @@
             v-for="hour in hourRange"
             :key="hour"
             :style="{
-              width: `${itemWidth}px` 
             }"
           >{{hour}}<sup>00</sup></div>
         </div>

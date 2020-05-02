@@ -5,6 +5,7 @@ import { ModelMap } from '@/types';
 import { Response } from './types';
 import store from '@/store';
 import { stateMerge } from 'vue-object-merge';
+import moment from 'moment';
 
 export interface IMainState {
   // id of selected cinema
@@ -21,6 +22,7 @@ export interface IMainState {
 @Module({ dynamic: true, store, name: 'main' })
 export default class Main extends VuexModule {
   cinema: string = '';
+  soonMonth: string = '';
   films: ModelMap<Film> = {};
   cinemas: ModelMap<Cinema> = {};
   halls: ModelMap<Hall> = {};
@@ -30,6 +32,7 @@ export default class Main extends VuexModule {
   ageRules: ModelMap<AgeRule> = {};
   genres: ModelMap<Genre> = {};
   dateShowtimes: { [key: string]: ModelMap<Showtime> } = {};
+  soonFilms: { [key: string]: Film[] } = {};
 
   @Mutation
   setModels({ model, data }: {
@@ -64,6 +67,11 @@ export default class Main extends VuexModule {
     stateMerge(this.dateShowtimes, newData);
   }
 
+  @Mutation
+  setSoon(soon: any) {
+    stateMerge(this.soonFilms, soon);
+  }
+
   @Action
   async getShowtime(id: string) {
     try {
@@ -84,8 +92,16 @@ export default class Main extends VuexModule {
         });
       }
     } catch (error) {
-
+      console.error(error);
     }
+  }
+
+  @Action
+  async fetchSoon() {
+    const { data: {
+      soon
+    } } = await api.get<any>('soon');
+    this.setSoon(soon);
   }
 
   @Action
@@ -96,7 +112,7 @@ export default class Main extends VuexModule {
       halls,
       hallCells
     } } = await api.get<any>('schedule/showtime', {
-      from: from.toISOString().slice(0, 10),
+      from: moment(from).format('YYYY-MM-DD'),
       cinema: this.cinema,
     });
     this.setDateShowtimes(showtimes);
@@ -140,6 +156,12 @@ export default class Main extends VuexModule {
         model: 'genres',
         data: data.genres
       });
+
+      // set cinema
+      if (process.env.NODE_ENV === 'development'
+        && Object.keys(this.cinemas).length) {
+          setTimeout(() => MainModule.setCinema(Object.keys(this.cinemas)[0]), .5 * 1000);
+      }
     }
     return data;
   }
@@ -148,6 +170,13 @@ export default class Main extends VuexModule {
   async setCinema(value: string) {
     return {
       cinema: value
+    };
+  }
+
+  @MutationAction({ mutate: ['soonMonth'] })
+  async setSoonMonth(month: string) {
+    return {
+      soonMonth: month
     };
   }
 }

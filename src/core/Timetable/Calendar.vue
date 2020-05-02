@@ -42,13 +42,14 @@ export default class Calendar extends Vue {
   get datesList() {
     const list = [];
     const sortedDates = this.dates.sort((a, b) => moment(a).unix() - moment(b).unix());
+    const today = moment();
     for (let m = moment(sortedDates[0]), step = 0; step < 7; ++step, m.add(1, 'day')) {
       const iso = m.format('YYYY-MM-DD');
       list.push({
         iso,
         showtimesExist: this.dates.includes(iso),
         date: m.format('DD.MM'),
-        word: step === 0 ? 'Сегодня' : step === 1 ? 'Завтра' : uppercaseFirst(m.format('dddd')),
+        word: today.isSame(m, 'day') ? 'Сегодня' : today.isSame(m.clone().subtract(1, 'day'), 'day') ? 'Завтра' : uppercaseFirst(m.format('dddd')),
       });
     }
     return list;

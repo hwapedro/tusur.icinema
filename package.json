@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.2",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/jquery": "^3.3.36",
+    "@types/lodash": "^4.14.150",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
     "@vue/cli-plugin-babel": "^4.2.0",

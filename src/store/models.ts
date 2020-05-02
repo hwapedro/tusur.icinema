@@ -41,17 +41,23 @@ export interface Showtime extends WithOid {
   time: Date;
   film: string;
   hall: string;
+  taken: {
+    row: number;
+    cell: number;
+  }[];
 }
 
 export interface HallCell extends WithOid {
   name: string;
   price: number;
+  color: string;
   index: number;
 }
 
 export interface Hall extends WithOid {
   name: string;
   structure: number[][];
+  color: string;
 }
 
 export interface ShopItem extends WithOid {

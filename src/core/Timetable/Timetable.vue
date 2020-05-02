@@ -13,7 +13,7 @@
         <TimetableHeader
           :startHour="startHour"
           :endHour="endHour"
-          :itemWidth="headerItemWidth"
+          :itemWidth="hourWidth"
         />
         <div class="timetable-wrap">
           <div
@@ -54,7 +54,7 @@
                   :startHour="startHour"
                   :endHour="endHour"
                   :date="date"
-                  :hourWidth="hourWidth"
+                  :hourWidth="hourWidth -0.01"
                 />
                 <div class="halls">
                   <div
@@ -108,7 +108,7 @@ import ShowtimeModal from "./ShowtimeModal.vue";
 import TimeOverlay from "./TimeOverlay.vue";
 import { ModelMap } from "../../types";
 import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
-import { formatPrice } from '../../shared/utils';
+import { formatPrice, formatFilmDuration } from '../../shared/utils';
 import moment from 'moment';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
@@ -125,7 +125,7 @@ export default class Timetable extends Vue {
   date: string = '';
   modalState: { [showtime: string]: boolean } = {};
   bubbleWidth = 50;
-  headerItemWidth = 65.33;
+  hourWidth = 65.33;
 
   created() {
     Bus.$on('hide-modal', this.onHideModal);
@@ -135,6 +135,16 @@ export default class Timetable extends Vue {
     if (MainModule.cinema) {
       this.fetchTimetable();
     }
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
+  }
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize() {
+    this.hourWidth = document.querySelector('.hour').getBoundingClientRect().width;
   }
 
   @Watch('cinema')
@@ -173,11 +183,7 @@ export default class Timetable extends Vue {
   filmLength(filmId: string): string {
     if (!this.films[filmId])
       return '';
-    const len = this.films[filmId].duration;
-    if (len > 60) {
-      return `${Math.floor(len / 60)} ч ${len % 60} мин`;
-    }
-    return `${len % 60} мин`;
+    return formatFilmDuration(this.films[filmId].duration);
   }
   showtimePrices(filmHallsObj: { [hallId: string]: (Showtime & { min: number, max: number })[] }) {
     // get min and max prices
@@ -211,7 +217,7 @@ export default class Timetable extends Vue {
   }
   showtimeBubbleCss(showtime: any, hallIndex: number) {
     // todo: color
-    const color = this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)];
+    const color = this.getHallColor(showtime, hallIndex);
     const time = moment(showtime.time);
     const maxHour = this.endHour + 1;
 
@@ -225,6 +231,9 @@ export default class Timetable extends Vue {
       'width': this.bubbleWidth,
     }
   }
+  getHallColor(showtime: Showtime, hallIndex: number) {
+    return this.halls[showtime.hall].color ? this.halls[showtime.hall].color : this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)];
+  }
   showtimeModalCss(showtime: Showtime, hallIndex: number) {
     const time = moment(showtime.time);
     const maxHour = this.endHour + 1;
@@ -234,7 +243,7 @@ export default class Timetable extends Vue {
     const offset = hourish / maxHour * 100; // %
     // const offset = hourish * hourWidth / HOURS_MERGED;
     return {
-      color: this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)],
+      color: this.getHallColor(showtime, hallIndex),
       offset,
       bwhf: this.bubbleWidth / 2,
     }
@@ -248,12 +257,6 @@ export default class Timetable extends Vue {
       '#fe6d73',
       '#F6C0D0',
     ];
-  }
-
-  get hourWidth() {
-    return this.headerItemWidth;
-    return parseInt(window.getComputedStyle(window.$('.hour')[0]).width);
-    // return window.$('.hour').eq(0).outerWidth();
   }
 
   get films(): ModelMap<Film> {
@@ -319,7 +322,7 @@ export default class Timetable extends Vue {
     }
   }
   .right {
-    padding: 0; 
+    padding: 0;
     position: relative;
   }
 }
@@ -328,7 +331,7 @@ export default class Timetable extends Vue {
   margin-bottom: 0.5rem;
   &__title {
     font-size: 1.1rem;
-    color: #ad2cbe;
+    color: $keyval-color;
   }
   &__value {
   }

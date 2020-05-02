@@ -1,4 +1,5 @@
-import { Hall } from '~/store/models';
+import { Hall, Film } from '~/store/models';
+import moment from 'moment';
 
 export const formatPrice = (number: number, suffix: boolean) => `${(number / 100).toFixed(2)}${suffix ? ' руб.' : ''}`;
 
@@ -29,3 +30,13 @@ export const getHallCells = (hall: Hall): number[] => {
 }
 
 export const uppercaseFirst = (str: string) => str[0].toUpperCase() + str.slice(1);
+
+export const formatFilmDuration = (len: number): string => {
+  if (len > 60) {
+    return `${Math.floor(len / 60)} ч ${len % 60} мин`;
+  }
+  return `${len % 60} мин`;
+}
+export const formatFilmDistributionRange = (start, end) => {
+  return `С ${moment(start).format('D MMM')} по ${moment(end).format('D MMM')}`;
+}
