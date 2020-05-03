@@ -1,6 +1,20 @@
 <template>
   <Loader :loading="!showtime || !showtime.hall || !halls[showtime.hall]">
     <div class="container">
+      <div
+        class="columns"
+        v-if="paymentErrorType"
+      >
+        <div class="column">
+          <!-- alert -->
+          <div class="notification payment-error is-danger content">
+            <button
+              class="delete"
+              @click="hideError"
+            ></button>{{paymentErrorText}}
+          </div>
+        </div>
+      </div>
       <div class="columns">
         <div class="column is-9">
           <h1 class="title">Выберите места</h1>
@@ -12,16 +26,47 @@
           />
         </div>
         <div class="column is-3">
-          <h2 class="title">Платите</h2>
+          <h2 class="title">Ваши места</h2>
           <div>
             <div
-              v-for="(place) in selectedPlaces"
+              class="buttons is-fullwidth has-addons"
+              style="margin-bottom: .2rem;"
+              v-for="(place, placeIndex) in selectedPlaces"
               :key="`${place.row}-${place.cell}`"
             >
-              <div class="title is-4">Ряд {{place.row + 1}}, место {{place.cell + 1}} </div>
+              <div
+                class="button is-static"
+                style='color: #000;'
+                :style="{
+                  'background-color': hallCells[halls[showtime.hall].structure[place.row][place.cell]].color 
+                  }"
+              >
+                <span v-if="!badSeats.find(s => s.row === place.row && s.cell === place.cell)">{{placeIndex + 1}}</span>
+                <span
+                  v-else
+                  class="icon  has-text-danger"
+                >
+                  <AlertIcon
+                    w="32px"
+                    h="32px"
+                  />
+                </span>
+              </div>
+              <button
+                class="button is-static is-expanded"
+                style='color: #000;'
+                :style="{
+                  'background-color': hallCells[halls[showtime.hall].structure[place.row][place.cell]].color 
+                  }"
+              >Ряд {{place.row + 1}}, место {{place.cell + 1}}</button>
+              <button
+                class="button  is-danger"
+                :disabled="isPaying"
+                @click="removeSelect(place)"
+              >&#10006;</button>
             </div>
           </div>
-          <div class="title is-3">Итого: {{totalSum}}</div>
+          <div class="title is-3">Итого: {{totalSum}} руб.</div>
           <hr>
           <div class="form-control">
             <Label>Имя</Label>
@@ -105,12 +150,14 @@ import moment from 'moment';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
 import SeatPicker from './SeatPicker.vue';
+import AlertIcon from 'vue-ionicons/dist/js/md-alert'
 
 @Component({
   components: {
     Input,
     Label,
     FormErrors,
+    AlertIcon,
     Loader,
     SeatPicker
   }
@@ -123,6 +170,9 @@ export default class PickSeat extends Vue {
   firstName = '';
   lastName = '';
   phone = '';
+
+  badSeats: any[] = [];
+  paymentErrorType = null;
 
   @Watch('phone')
   wph() {
@@ -175,6 +225,15 @@ export default class PickSeat extends Vue {
       this.selectedPlaces.splice(pos, 1);
     }
   }
+  removeSelect(seat) {
+    if (this.isPaying)
+      return;
+    this.onSeatDeselect(seat);
+    Bus.$emit('deselect-sp', seat);
+  }
+  hideError() {
+    this.paymentErrorType = null;
+  }
 
   get showtime() {
     return this.showtimes[this.showtimeId];
@@ -201,6 +260,13 @@ export default class PickSeat extends Vue {
     return MainModule.cinema;
   }
 
+  get paymentErrorText() {
+    switch (this.paymentErrorType) {
+      case 'taken':
+        return `Данные места уже заняты:\n${this.badSeats.map(seat => `Ряд ${seat.row + 1}, место ${seat.cell + 1}`).join('\n')}.\nПожалуйста, выберите другие места.`;
+        break;
+    }
+  }
 
   get totalSum() {
     const hall = MainModule.halls[this.showtime ? this.showtime.hall : 'null'];
@@ -210,7 +276,7 @@ export default class PickSeat extends Vue {
     return formatPrice(this.selectedPlaces.reduce((acc, curr) => {
       const cell = MainModule.hallCells[hall.structure[curr.row][curr.cell]];
       return acc + (cell ? cell.price : 0);
-    }, 0), true);
+    }, 0), false);
   }
 
   // @Watch('selectedPlaces')
@@ -219,6 +285,8 @@ export default class PickSeat extends Vue {
   // }
 
   async prepareForPayment() {
+    this.paymentErrorType = null;
+    this.badSeats = [];
     await (this as any).$v.$touch();
     if ((this as any).$v.$anyError) {
       return false;
@@ -233,8 +301,9 @@ export default class PickSeat extends Vue {
       this.isPaying = true;
       this.renderPaymentButton();
     } else {
-      if (status === 'taken') {
-        alert('Cannot pay. Seats are blocked ' + JSON.stringify(data.seats));
+      if (data.status === 'taken') {
+        this.paymentErrorType = 'taken';
+        this.badSeats = data.seats;
       }
     }
   }
@@ -283,3 +352,9 @@ export default class PickSeat extends Vue {
 }
 
 </script>
+
+<style lang="scss" scoped>
+.payment-error {
+  white-space: pre-wrap;
+}
+</style>

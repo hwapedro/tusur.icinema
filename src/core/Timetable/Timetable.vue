@@ -3,90 +3,91 @@
     <div class="columns">
       <div class="column">
         <h1 class="title">Расписание</h1>
+        <Loader :loading="loading">
+          <Calendar
+            :dates="sortedDays"
+            :selectedDate="date"
+            @set-date="setDate"
+          />
 
-        <Calendar
-          :dates="Object.keys(showtimes)"
-          :selectedDate="date"
-          @set-date="setDate"
-        />
-
-        <TimetableHeader
-          :startHour="startHour"
-          :endHour="endHour"
-          :itemWidth="hourWidth"
-        />
-        <div class="timetable-wrap">
-          <div
-            class="container timetable-entry"
-            v-for="(filmHallsObj, filmId) in showtimes[date]"
-            :key="date + filmId"
-          >
-            <div class="timetable-row columns">
-              <div class="column is-4 left">
-                <!-- left part of row -->
-                <div class="row-left__wrap">
-                  <div class="row-left__img">
-                    <img
-                      :src="films[filmId].image"
-                      alt="film image"
-                    >
-                  </div>
-                  <div class="row-left__info">
-                    <div class="film__title title is-3">{{ films[filmId].name }}</div>
-                    <div class="film-prop">
-                      <div class="film-prop__title subtitle is-5 is-marginless">Жанр:</div>
-                      <div class="film-prop__value">{{ filmGenres(filmId) }}</div>
+          <TimetableHeader
+            :startHour="startHour"
+            :endHour="endHour"
+            :itemWidth="hourWidth"
+          />
+          <div class="timetable-wrap">
+            <div
+              class="container timetable-entry"
+              v-for="(filmHallsObj, filmId) in showtimes[date]"
+              :key="date + filmId"
+            >
+              <div class="timetable-row columns">
+                <div class="column is-4 left">
+                  <!-- left part of row -->
+                  <div class="row-left__wrap">
+                    <div class="row-left__img">
+                      <img
+                        :src="films[filmId].image"
+                        alt="film image"
+                      >
                     </div>
-                    <div class="film-prop">
-                      <div class="film-prop__title subtitle is-5 is-marginless">Продолжительность:</div>
-                      <div class="film-prop__value">{{ filmLength(filmId) }}</div>
-                    </div>
-                    <div class="film-prop">
-                      <div class="film-prop__title subtitle is-5 is-marginless">Цена билета:</div>
-                      <div class="film-prop__value">{{ showtimePrices(filmHallsObj) }}</div>
+                    <div class="row-left__info">
+                      <div class="film__title title is-3">{{ films[filmId].name }}</div>
+                      <div class="film-prop">
+                        <div class="film-prop__title subtitle is-5 is-marginless">Жанр:</div>
+                        <div class="film-prop__value">{{ filmGenres(filmId) }}</div>
+                      </div>
+                      <div class="film-prop">
+                        <div class="film-prop__title subtitle is-5 is-marginless">Продолжительность:</div>
+                        <div class="film-prop__value">{{ filmLength(filmId) }}</div>
+                      </div>
+                      <div class="film-prop">
+                        <div class="film-prop__title subtitle is-5 is-marginless">Цена билета:</div>
+                        <div class="film-prop__value">{{ showtimePrices(filmHallsObj) }}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="column right">
-                <!-- right part -->
-                <TimeOverlay
-                  :startHour="startHour"
-                  :endHour="endHour"
-                  :date="date"
-                  :hourWidth="hourWidth -0.01"
-                />
-                <div class="halls">
-                  <div
-                    v-for="(filmShowtimesObj, hallId, hallIndex) in filmHallsObj"
-                    :key="hallId"
-                    class="hall-row"
-                  >
+                <div class="column right">
+                  <!-- right part -->
+                  <TimeOverlay
+                    :startHour="startHour"
+                    :endHour="endHour"
+                    :date="date"
+                    :hourWidth="hourWidth -0.01"
+                  />
+                  <div class="halls">
                     <div
-                      class="showtime"
-                      v-for="(showtime) in filmShowtimesObj"
-                      :key="showtime._id"
+                      v-for="(filmShowtimesObj, hallId, hallIndex) in filmHallsObj"
+                      :key="hallId"
+                      class="hall-row"
                     >
-                      <span
-                        class="showtime__bubble tag is-normal"
-                        :style="showtimeBubbleCss(showtime, hallIndex)"
-                        @mouseover="toggleShowtimeModal(showtime._id, true)"
-                      >{{ formatShowtimeBubbleTime(showtime.time) }}</span>
-                      <ShowtimeModal
-                        :active="modalState[showtime._id]"
-                        :styleInfo="showtimeModalCss(showtime, hallIndex)"
-                        :hall="halls[showtime.hall]"
-                        :showtime="showtime"
-                        :hallCells="hallCells"
-                        @hide-modal="onHideModal"
-                      />
+                      <div
+                        class="showtime"
+                        v-for="(showtime) in filmShowtimesObj"
+                        :key="showtime._id"
+                      >
+                        <span
+                          class="showtime__bubble tag is-normal"
+                          :style="showtimeBubbleCss(showtime, hallIndex)"
+                          @mouseover="toggleShowtimeModal(showtime._id, true)"
+                        >{{ formatShowtimeBubbleTime(showtime.time) }}</span>
+                        <ShowtimeModal
+                          :active="modalState[showtime._id]"
+                          :styleInfo="showtimeModalCss(showtime, hallIndex)"
+                          :hall="halls[showtime.hall]"
+                          :showtime="showtime"
+                          :hallCells="hallCells"
+                          @hide-modal="onHideModal"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </Loader>
       </div>
     </div>
   </div>
@@ -106,6 +107,7 @@ import TimetableHeader from "./TimetableHeader.vue";
 import Calendar from "./Calendar.vue";
 import ShowtimeModal from "./ShowtimeModal.vue";
 import TimeOverlay from "./TimeOverlay.vue";
+import Loader from '../../shared/components/Loader.vue';
 import { ModelMap } from "../../types";
 import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
 import { formatPrice, formatFilmDuration } from '../../shared/utils';
@@ -118,7 +120,8 @@ import { Bus } from '../../shared/bus';
     TimetableHeader,
     Calendar,
     ShowtimeModal,
-    TimeOverlay
+    TimeOverlay,
+    Loader
   }
 })
 export default class Timetable extends Vue {
@@ -126,6 +129,7 @@ export default class Timetable extends Vue {
   modalState: { [showtime: string]: boolean } = {};
   bubbleWidth = 50;
   hourWidth = 65.33;
+  loading: boolean = true;
 
   created() {
     Bus.$on('hide-modal', this.onHideModal);
@@ -136,7 +140,6 @@ export default class Timetable extends Vue {
       this.fetchTimetable();
     }
     window.addEventListener('resize', this.handleResize);
-    this.handleResize();
   }
 
   beforeDestroy() {
@@ -144,7 +147,8 @@ export default class Timetable extends Vue {
   }
 
   handleResize() {
-    this.hourWidth = document.querySelector('.hour').getBoundingClientRect().width;
+    const hourEl = document.querySelector('.hour');
+    this.hourWidth = hourEl ? hourEl.getBoundingClientRect().width : 0;
   }
 
   @Watch('cinema')
@@ -154,8 +158,10 @@ export default class Timetable extends Vue {
 
   @Debounce({ time: 500 })
   async fetchTimetable() {
+    this.loading = true;
     await MainModule.fetchTimetable(new Date())
-    this.date = Object.keys(MainModule.dateShowtimes)[0];
+    this.date = this.sortedDays[0];
+    this.loading = false;
   }
 
   onHideModal(showtime: string) {
@@ -178,7 +184,7 @@ export default class Timetable extends Vue {
   filmGenres(filmId: string): string {
     if (!this.films[filmId])
       return '';
-    return this.films[filmId].genres.map(genreId => this.genres[<any>genreId as string].name).join(', ');
+    return this.films[filmId].genres.map(genreId => this.genres[<any>genreId as string].name.toLowerCase()).join(', ');
   }
   filmLength(filmId: string): string {
     if (!this.films[filmId])
@@ -281,6 +287,9 @@ export default class Timetable extends Vue {
     return MainModule.cinema;
   }
 
+  get sortedDays() {
+    return Object.keys(this.showtimes).sort((a, b) => Math.sign(moment(a).diff(moment(b))));
+  }
   get startHour() {
     return 0;
   }

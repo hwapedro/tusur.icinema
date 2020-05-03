@@ -27,9 +27,6 @@
           }"
         >{{ hall.name }}</div>
         <div class="showtime-modal__body">
-          <div class="hall-preview">
-            Зал превью?
-          </div>
           <div class="prices">Цена: {{ showtimePrices }}</div>
           <router-link
             :to="`/showtime/${showtime._id}`"

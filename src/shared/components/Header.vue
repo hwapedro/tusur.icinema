@@ -1,66 +1,63 @@
 <template>
-  <div class="container">
-    <div class="columns">
-      <div class="column">
-        <nav
-          class="navbar"
-          role="navigation"
-          aria-label="main navigation"
+  <nav
+    class="navbar is-primary"
+    id="main-navbar"
+    role="navigation"
+    aria-label="main navigation"
+  >
+    <div class="container">
+      <div class="navbar-brand">
+        <a
+          class="navbar-item"
+          href="/"
         >
-          <div class="navbar-brand">
-            <a
-              class="navbar-item"
-              href="/"
-            >
-              {{ cinema ? cinemas[cinema].name : 'Cinema' }}
-            </a>
-            <a
-              role="button"
-              class="navbar-burger burger"
-              aria-label="menu"
-              aria-expanded="false"
-              data-target="navbarBasicExample"
-            >
-              <span aria-hidden="true"></span>
-              <span aria-hidden="true"></span>
-              <span aria-hidden="true"></span>
-            </a>
-          </div>
+          {{ cinema ? cinemas[cinema].name : 'Cinema' }}
+        </a>
+        <a
+          role="button"
+          class="navbar-burger burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navbarBasicExample"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
 
-          <div
-            id="navbarBasicExample"
-            class="navbar-menu"
-          >
-            <div class="navbar-start">
-              <router-link
-                class="navbar-item"
-                v-for="route in routesInHeader"
-                :key="route.name"
-                :to="route.path"
-              >{{ route.name }}</router-link>
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <router-link
+            class="navbar-item"
+            v-for="route in routesInHeader"
+            :key="route.name"
+            :to="route.path"
+          >{{ route.name }}</router-link>
+        </div>
+        <div class="navbar-end">
+          <div class="level">
+            <div class="select">
+              <select v-model="cinema">
+                <option
+                  disabled
+                  value=""
+                >Выберите кинотеатр</option>
+                <option
+                  v-for="(cinema, cinemaId) in cinemas"
+                  :key="cinemaId"
+                  :value="cinemaId"
+                >
+                  {{ cinema.name }}
+                </option>
+              </select>
             </div>
-            <div class="navbar-end">
-              <div class="select">
-                <select v-model="cinema">
-                  <option
-                    disabled
-                    value=""
-                  >Выберите кинотеатр</option>
-                  <option
-                    v-for="(cinema, cinemaId) in cinemas"
-                    :key="cinemaId"
-                    :value="cinemaId"
-                  >
-                    {{ cinema.name }}
-                  </option>
-                </select>
-              </div>
-            </div>
+
           </div>
-        </nav>
+        </div>
       </div>
     </div>
-  </div>
+  </nav>
 </template>
 
 <script lang="ts">
@@ -90,4 +87,7 @@ export default class Header extends Vue {
 </script>
 
 <style lang="scss" scoped>
+#main-navbar {
+  margin-bottom: 1rem;
+}
 </style>

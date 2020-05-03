@@ -1,5 +1,6 @@
 import { Component } from 'vue-property-decorator'
 Component.registerHooks(['validations']);
+require('vue-ionicons/ionicons.css');
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";

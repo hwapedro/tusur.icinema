@@ -2,7 +2,7 @@
   <div>
     <div
       class="load-wrap"
-      v-if="loading || false"
+      v-if="loading"
     >
      <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
     </div>

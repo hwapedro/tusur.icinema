@@ -15,6 +15,17 @@ export interface Genre extends WithOid {
   name: string;
 }
 
+export interface NewsItem extends WithOid {
+  title: string;
+  text: string;
+  date: Date;
+  comments?: NewsComment[];
+}
+export interface NewsComment {
+  text: string;
+  time: Date;
+}
+
 export interface Film extends WithOid {
   name: string;
   description: string;

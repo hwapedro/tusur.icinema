@@ -1,5 +1,5 @@
 import { Module, VuexModule, Mutation, Action, MutationAction, getModule } from 'vuex-module-decorators';
-import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre } from '@/store/models';
+import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre, NewsItem, NewsComment } from '@/store/models';
 import api from '@/api';
 import { ModelMap } from '@/types';
 import { Response } from './types';
@@ -33,6 +33,8 @@ export default class Main extends VuexModule {
   genres: ModelMap<Genre> = {};
   dateShowtimes: { [key: string]: ModelMap<Showtime> } = {};
   soonFilms: { [key: string]: Film[] } = {};
+  news: NewsItem[] = [];
+  comments: NewsComment[] = [];
 
   @Mutation
   setModels({ model, data }: {
@@ -70,6 +72,24 @@ export default class Main extends VuexModule {
   @Mutation
   setSoon(soon: any) {
     stateMerge(this.soonFilms, soon);
+  }
+
+  @Action 
+  async getNews(pagination: { skip: number, take: number }) {
+    try {
+      const { data } = await api.get(`news`, {
+        skip: pagination.skip,
+        take: pagination.take,
+      });
+      if (data.success) {
+        this.setModels({
+          model: 'news',
+          data: [data.news],
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   @Action

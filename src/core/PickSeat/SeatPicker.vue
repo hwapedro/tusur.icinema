@@ -4,12 +4,22 @@
     v-if="showtime && hall"
   >
     <div class="container has-text-centered">
+      <div class="hall-row">
+        <div class="hall-cell numeric hidden"></div>
+        <div
+          class="hall-cell numeric"
+          v-for="i in cellState[0].length"
+          :key="i"
+        >
+          {{i}}</div>
+      </div>
       <div
         class="hall-row"
         v-for="(row, rowIndex) in cellState"
         :data-hehe="rowIndex"
         :key="rowIndex"
       >
+        <span class="hall-cell numeric">{{rowIndex + 1}}</span>
         <div
           class="hall-cell"
           v-for="(cell, cellIndex) in row"
@@ -45,6 +55,12 @@ export default class SeatPicker extends Vue {
 
   cellState: CELL_STATE[][] = null;
 
+  created() {
+    Bus.$on('deselect-sp', (place) => {
+      this.deselect(place);
+    })
+  }
+
   @Watch('hall', { deep: true, immediate: true })
   onHallChange(hall: Hall) {
     this.calculateCellState(hall, this.showtime);
@@ -56,6 +72,9 @@ export default class SeatPicker extends Vue {
   }
 
   calculateCellState(hall: Hall, showtime: Showtime) {
+    if (!hall || !showtime)
+      return;
+    console.log(hall, showtime);
     const structure = hall.structure;
     this.cellState = [];
     for (let i = 0; i < structure.length; ++i) {
@@ -75,6 +94,12 @@ export default class SeatPicker extends Vue {
     }
   }
 
+  deselect({ row, cell }) {
+    const state = this.cellState[row][cell];
+    const newRow = this.cellState[row].slice();
+    newRow[cell] = CELL_STATE.FREE;
+    this.$set(this.cellState, row, newRow);
+  }
   onCellClick(row: number, cell: number) {
     if (this.disabled) {
       return;
@@ -104,7 +129,7 @@ export default class SeatPicker extends Vue {
   cellColor(row: number, cell: number, cellIndex: number): string {
     if (!this.cellState
       || !this.cellState[row]) {
-      return '#ffffff00';
+      return 'none'; //''#ffffff00';
     }
     switch (this.cellState[row][cell]) {
       case CELL_STATE.FREE:
@@ -133,6 +158,9 @@ export default class SeatPicker extends Vue {
   $space: 0.6rem;
   .hall-row {
     margin-bottom: $space;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
   }
   $base-size: 2rem;
   .hall-cell {
@@ -141,6 +169,14 @@ export default class SeatPicker extends Vue {
     height: $base-size * 1.4;
     border-radius: 5px;
     display: inline-block;
+
+    &.numeric {
+      vertical-align: middle;
+      text-align: center;
+      color: #000;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
   }
 }
 </style>
