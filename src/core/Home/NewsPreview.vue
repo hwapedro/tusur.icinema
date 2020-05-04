@@ -3,27 +3,19 @@
     <figure class="media-left">
 
     </figure>
-    <div class="media-content">
+    <div class="media-content is-hoverable">
       <div class="content">
-        <div class="title is-4">{{item.title}}</div>
-        <p><small>{{newsDate}}</small></p>  
-      </div>
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-reply"></i></span>
-          </a>
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-retweet"></i></span>
-          </a>
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-heart"></i></span>
-          </a>
+        <div class="title is-4 is-marginless">
+          <router-link
+            class="title is-4 is-marginless"
+            :to="`/news/${item._id}`"
+          >{{item.title}}</router-link>
         </div>
-      </nav>
+        <p><small>{{newsDate}}</small></p>
+        <p>{{ellipsis}}</p>
+      </div>
     </div>
     <div class="media-right">
-      <button class="delete"></button>
     </div>
   </article>
 </template>
@@ -39,6 +31,8 @@ import {
 import { NewsItem } from '../../store/models';
 import moment from 'moment';
 
+const EL_LENGTH = 150;
+
 @Component
 export default class NewsPreview extends Vue {
   name = 'NewsPreview';
@@ -48,7 +42,10 @@ export default class NewsPreview extends Vue {
   }
 
   get newsDate() {
-    return moment().from(this.item.date);
+    return moment(this.item.date).format('DD MMM YYYY');
+  }
+  get ellipsis() {
+    return this.item.text.length > EL_LENGTH ? this.item.text.slice(0, EL_LENGTH) + '...' : this.item.text;
   }
 }
 

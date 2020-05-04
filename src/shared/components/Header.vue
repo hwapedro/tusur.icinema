@@ -7,12 +7,10 @@
   >
     <div class="container">
       <div class="navbar-brand">
-        <a
+        <router-link
           class="navbar-item"
-          href="/"
-        >
-          {{ cinema ? cinemas[cinema].name : 'Cinema' }}
-        </a>
+          to="/"
+        > {{ cinema ? cinemas[cinema].name : 'Cinema' }}</router-link>
         <a
           role="button"
           class="navbar-burger burger"

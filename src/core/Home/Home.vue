@@ -1,13 +1,19 @@
 <template>
-    <!-- render news -->
-    <div class="conlumns">
+  <div class="container timetable">
+    <div class="columns">
       <div class="column">
-        <NewsPreview 
-          v-for="newsItem in news"
-          :key="newsItem._id"
-        />
+        <h1 class="title">{{cinema ? cinemas[cinema].name : ''}}</h1>
+        <div class="subtitle">Новости</div>
+        <Loader :loading="newsLoading">
+          <NewsPreview
+            v-for="newsItem in news"
+            :item="newsItem"
+            :key="newsItem._id"
+          />
+        </Loader>
       </div>
     </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -18,10 +24,16 @@ import {
   Action,
   Mutation
 } from 'vuex-class';
-import NewsPreview from'./NewsPreview.vue';
+import NewsPreview from './NewsPreview.vue';
 import { MainModule } from '../../store/modules/main';
+import Loader from '../../shared/components/Loader.vue';
 
-@Component
+@Component({
+  components: {
+    NewsPreview,
+    Loader,
+  }
+})
 export default class Home extends Vue {
   name = 'Home';
   newsLoading = true;
@@ -38,6 +50,12 @@ export default class Home extends Vue {
 
   get news() {
     return MainModule.news;
+  }
+  get cinema() {
+    return MainModule.cinema;
+  }
+  get cinemas() {
+    return MainModule.cinemas;
   }
 }
 

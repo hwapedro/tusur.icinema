@@ -60,6 +60,16 @@ export default class Main extends VuexModule {
   }
 
   @Mutation
+  setNews(data) {
+    this.news.push(...data);
+  }
+
+  @Mutation
+  resetNews() {
+    this.news = [];
+  }
+
+  @Mutation
   setDateShowtimes(showtimes) {
     const newData = {};
     for (const entry of showtimes) {
@@ -77,15 +87,13 @@ export default class Main extends VuexModule {
   @Action 
   async getNews(pagination: { skip: number, take: number }) {
     try {
+      this.resetNews();
       const { data } = await api.get(`news`, {
         skip: pagination.skip,
-        take: pagination.take,
+        limit: pagination.take,
       });
       if (data.success) {
-        this.setModels({
-          model: 'news',
-          data: [data.news],
-        });
+        this.setNews(data.news);
       }
     } catch (error) {
       console.error(error);
