@@ -4,17 +4,9 @@
       <div class="column">
         <h1 class="title">Расписание</h1>
         <Loader :loading="loading">
-          <Calendar
-            :dates="sortedDays"
-            :selectedDate="date"
-            @set-date="setDate"
-          />
+          <Calendar :dates="sortedDays" :selectedDate="date" @set-date="setDate" />
 
-          <TimetableHeader
-            :startHour="startHour"
-            :endHour="endHour"
-            :itemWidth="hourWidth"
-          />
+          <TimetableHeader :startHour="startHour" :endHour="endHour" :itemWidth="hourWidth" />
           <div class="timetable-wrap">
             <div
               class="container timetable-entry"
@@ -26,10 +18,7 @@
                   <!-- left part of row -->
                   <div class="row-left__wrap">
                     <div class="row-left__img">
-                      <img
-                        :src="films[filmId].image"
-                        alt="film image"
-                      >
+                      <img :src="films[filmId].image" alt="film image" />
                     </div>
                     <div class="row-left__info">
                       <div class="film__title title is-3">{{ films[filmId].name }}</div>
@@ -45,6 +34,13 @@
                         <div class="film-prop__title subtitle is-5 is-marginless">Цена билета:</div>
                         <div class="film-prop__value">{{ showtimePrices(filmHallsObj) }}</div>
                       </div>
+                      <router-link :to="`/film/${films[filmId]._id}`" v-slot="{ href, route, navigate}">
+                        <a
+                          class="link button is-link is-outlined is-focused is-primary"
+                          @click="navigate"
+                          :href="href"
+                        >перейти к фильму</a>
+                      </router-link>
                     </div>
                   </div>
                 </div>
@@ -94,26 +90,36 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Inject, Watch, Emit, } from "vue-property-decorator";
 import {
-  State,
-  Getter,
-  Action,
-  Mutation
-} from 'vuex-class';
+  Component,
+  Prop,
+  Vue,
+  Inject,
+  Watch,
+  Emit
+} from "vue-property-decorator";
+import { State, Getter, Action, Mutation } from "vuex-class";
 import { MainModule } from "../../store/modules/main";
-import { Debounce } from 'vue-debounce-decorator';
+import { Debounce } from "vue-debounce-decorator";
 import TimetableHeader from "./TimetableHeader.vue";
 import Calendar from "./Calendar.vue";
 import ShowtimeModal from "./ShowtimeModal.vue";
 import TimeOverlay from "./TimeOverlay.vue";
-import Loader from '../../shared/components/Loader.vue';
+import Loader from "../../shared/components/Loader.vue";
 import { ModelMap } from "../../types";
-import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
-import { formatPrice, formatFilmDuration } from '../../shared/utils';
-import moment from 'moment';
-import { HOURS_MERGED } from '../../shared/constants';
-import { Bus } from '../../shared/bus';
+import {
+  Genre,
+  Showtime,
+  Hall,
+  HallCell,
+  AgeRule,
+  Cinema,
+  Film
+} from "../../store/models";
+import { formatPrice, formatFilmDuration } from "../../shared/utils";
+import moment from "moment";
+import { HOURS_MERGED } from "../../shared/constants";
+import { Bus } from "../../shared/bus";
 
 @Component({
   components: {
@@ -125,33 +131,33 @@ import { Bus } from '../../shared/bus';
   }
 })
 export default class Timetable extends Vue {
-  date: string = '';
+  date: string = "";
   modalState: { [showtime: string]: boolean } = {};
   bubbleWidth = 50;
   hourWidth = 65.33;
   loading: boolean = true;
 
   created() {
-    Bus.$on('hide-modal', this.onHideModal);
+    Bus.$on("hide-modal", this.onHideModal);
   }
 
   mounted() {
     if (MainModule.cinema) {
       this.fetchTimetable();
     }
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   }
 
   beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener("resize", this.handleResize);
   }
 
   handleResize() {
-    const hourEl = document.querySelector('.hour');
+    const hourEl = document.querySelector(".hour");
     this.hourWidth = hourEl ? hourEl.getBoundingClientRect().width : 0;
   }
 
-  @Watch('cinema')
+  @Watch("cinema")
   onCinemaChange() {
     this.fetchTimetable();
   }
@@ -159,7 +165,7 @@ export default class Timetable extends Vue {
   @Debounce({ time: 500 })
   async fetchTimetable() {
     this.loading = true;
-    await MainModule.fetchTimetable(new Date())
+    await MainModule.fetchTimetable(new Date());
     this.date = this.sortedDays[0];
     this.loading = false;
   }
@@ -174,52 +180,54 @@ export default class Timetable extends Vue {
         this.modalState[showtime] = false;
       }
     }
-    this.$set(this, 'modalState', {
+    this.$set(this, "modalState", {
       ...this.modalState,
-      [showtime]: status,
+      [showtime]: status
     });
     // this.$set(this.modalState, showtime, status);
   }
 
   filmGenres(filmId: string): string {
-    if (!this.films[filmId])
-      return '';
-    return this.films[filmId].genres.map(genreId => this.genres[<any>genreId as string].name.toLowerCase()).join(', ');
+    if (!this.films[filmId]) return "";
+    return this.films[filmId].genres
+      .map(genreId => this.genres[(<any>genreId) as string].name.toLowerCase())
+      .join(", ");
   }
   filmLength(filmId: string): string {
-    if (!this.films[filmId])
-      return '';
+    if (!this.films[filmId]) return "";
     return formatFilmDuration(this.films[filmId].duration);
   }
-  showtimePrices(filmHallsObj: { [hallId: string]: (Showtime & { min: number, max: number })[] }) {
+  showtimePrices(filmHallsObj: {
+    [hallId: string]: (Showtime & { min: number; max: number })[];
+  }) {
     // get min and max prices
     // convert to set
-    const minmaxes = Object.values(filmHallsObj)
-      .map(showtimes => {
-        return showtimes.reduce((acc, curr) => {
-          if (curr.min < acc.min)
-            acc.min = curr.min;
-          if (curr.max > acc.max)
-            acc.max = curr.max;
+    const minmaxes = Object.values(filmHallsObj).map(showtimes => {
+      return showtimes.reduce(
+        (acc, curr) => {
+          if (curr.min < acc.min) acc.min = curr.min;
+          if (curr.max > acc.max) acc.max = curr.max;
           return acc;
-        }, {
+        },
+        {
           min: showtimes[0].min,
-          max: showtimes[0].max,
-        });
-      });
+          max: showtimes[0].max
+        }
+      );
+    });
     let min = minmaxes[0].min,
       max = minmaxes[0].max;
     for (const minmax of minmaxes) {
-      if (minmax.min < min)
-        min = minmax.min;
-      if (minmax.max > max)
-        max = minmax.max;
+      if (minmax.min < min) min = minmax.min;
+      if (minmax.max > max) max = minmax.max;
     }
-    return min === max ? formatPrice(min, true) : `${formatPrice(min, false)} - ${formatPrice(max, true)}`
+    return min === max
+      ? formatPrice(min, true)
+      : `${formatPrice(min, false)} - ${formatPrice(max, true)}`;
   }
 
   formatShowtimeBubbleTime(time: number | string) {
-    return moment(time).format('HH:mm');
+    return moment(time).format("HH:mm");
   }
   showtimeBubbleCss(showtime: any, hallIndex: number) {
     // todo: color
@@ -227,42 +235,42 @@ export default class Timetable extends Vue {
     const time = moment(showtime.time);
     const maxHour = this.endHour + 1;
 
-    const hourish = moment.duration(time.hours() * 60 + time.minutes(), 'minutes').asHours();
+    const hourish = moment
+      .duration(time.hours() * 60 + time.minutes(), "minutes")
+      .asHours();
     // console.log(hourish, this.hourWidth);
-    const offset = hourish / maxHour * 100; // %
+    const offset = (hourish / maxHour) * 100; // %
     // const offset = hourish * hourWidth / HOURS_MERGED;
     return {
-      'background-color': color,
-      'left': `${offset}%`,
-      'width': this.bubbleWidth,
-    }
+      "background-color": color,
+      left: `${offset}%`,
+      width: this.bubbleWidth
+    };
   }
   getHallColor(showtime: Showtime, hallIndex: number) {
-    return this.halls[showtime.hall].color ? this.halls[showtime.hall].color : this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)];
+    return this.halls[showtime.hall].color
+      ? this.halls[showtime.hall].color
+      : this.hallColors[Math.min(hallIndex, this.hallColors.length - 1)];
   }
   showtimeModalCss(showtime: Showtime, hallIndex: number) {
     const time = moment(showtime.time);
     const maxHour = this.endHour + 1;
 
-    const hourish = moment.duration(time.hours() * 60 + time.minutes(), 'minutes').asHours();
+    const hourish = moment
+      .duration(time.hours() * 60 + time.minutes(), "minutes")
+      .asHours();
     // console.log(hourish, this.hourWidth);
-    const offset = hourish / maxHour * 100; // %
+    const offset = (hourish / maxHour) * 100; // %
     // const offset = hourish * hourWidth / HOURS_MERGED;
     return {
       color: this.getHallColor(showtime, hallIndex),
       offset,
-      bwhf: this.bubbleWidth / 2,
-    }
+      bwhf: this.bubbleWidth / 2
+    };
   }
 
   get hallColors(): string[] {
-    return [
-      '#00d1b2',
-      '#ffcb77',
-      '#557C9D',
-      '#fe6d73',
-      '#F6C0D0',
-    ];
+    return ["#00d1b2", "#ffcb77", "#557C9D", "#fe6d73", "#F6C0D0"];
   }
 
   get films(): ModelMap<Film> {
@@ -288,7 +296,9 @@ export default class Timetable extends Vue {
   }
 
   get sortedDays() {
-    return Object.keys(this.showtimes).sort((a, b) => Math.sign(moment(a).diff(moment(b))));
+    return Object.keys(this.showtimes).sort((a, b) =>
+      Math.sign(moment(a).diff(moment(b)))
+    );
   }
   get startHour() {
     return 0;
@@ -301,7 +311,6 @@ export default class Timetable extends Vue {
     this.date = date;
   }
 }
-
 </script>
 
 <style lang="scss">

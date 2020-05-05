@@ -37,6 +37,7 @@ export interface Film extends WithOid {
   distributionEndDate: Date;
   actors: Actor[];
   genres: Genre[];
+  news: NewsItem[];
 }
 
 export interface Cinema extends WithOid {

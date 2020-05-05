@@ -12,6 +12,7 @@ export interface IMainState {
   cinema: string;
 
   films: ModelMap<Film>;
+  film: Film;
   cinemas: ModelMap<Cinema>;
   halls: ModelMap<Hall>;
   hallCells: ModelMap<HallCell>;
@@ -23,6 +24,7 @@ export interface IMainState {
 export default class Main extends VuexModule {
   cinema: string = '';
   soonMonth: string = '';
+  film: any = {};
   films: ModelMap<Film> = {};
   cinemas: ModelMap<Cinema> = {};
   halls: ModelMap<Hall> = {};
@@ -84,7 +86,7 @@ export default class Main extends VuexModule {
     stateMerge(this.soonFilms, soon);
   }
 
-  @Action 
+  @Action
   async getNews(pagination: { skip: number, take: number }) {
     try {
       this.resetNews();
@@ -94,6 +96,21 @@ export default class Main extends VuexModule {
       });
       if (data.success) {
         this.setNews(data.news);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @Action
+  async getFilm(id: string) {
+    try {
+      const { data } = await api.get(`schedule/film/${id}`);
+      if (data.success) {
+        this.setModels({
+          model: 'film',
+          data: [data.film],
+        });
       }
     } catch (error) {
       console.error(error);
@@ -188,7 +205,7 @@ export default class Main extends VuexModule {
       // set cinema
       if (process.env.NODE_ENV === 'development'
         && Object.keys(this.cinemas).length) {
-          setTimeout(() => MainModule.setCinema(Object.keys(this.cinemas)[0]), .5 * 1000);
+        setTimeout(() => MainModule.setCinema(Object.keys(this.cinemas)[0]), .5 * 1000);
       }
     }
     return data;
