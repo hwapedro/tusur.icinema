@@ -1,6 +1,10 @@
 <template>
   <p
-    class="help is-danger"
+    class="has-text-danger"
+    :class="big ? {
+      help: true, 
+      'is-danger': true
+      }: { 'big-error': true }"
     v-if="validation.$error && firstError !== null"
   >{{ firstError }}</p>
 </template>
@@ -15,6 +19,7 @@ export default class FormErrors extends Vue {
 
   @Prop() validation!: any;
   @Prop() errorTexts!: object;
+  @Prop() big!: boolean;
 
   get firstError() {
     if (!this.validation)
@@ -30,4 +35,7 @@ export default class FormErrors extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.big-error {
+  font-size: 1.1rem;
+}
 </style>

@@ -22,6 +22,7 @@ export interface IMainState {
 
 @Module({ dynamic: true, store, name: 'main' })
 export default class Main extends VuexModule {
+  loading: boolean = false;
   cinema: string = '';
   soonMonth: string = '';
   film: any = {};
@@ -35,8 +36,8 @@ export default class Main extends VuexModule {
   genres: ModelMap<Genre> = {};
   dateShowtimes: { [key: string]: ModelMap<Showtime> } = {};
   soonFilms: { [key: string]: Film[] } = {};
-  news: NewsItem[] = [];
-  comments: NewsComment[] = [];
+  news: ModelMap<NewsItem> = {};
+  comments: ModelMap<Comment> = {};
 
   @Mutation
   setModels({ model, data }: {
@@ -52,6 +53,11 @@ export default class Main extends VuexModule {
   }
 
   @Mutation
+  setLoading(l) {
+    this.loading = l;
+  }
+
+  @Mutation
   setHallCells(data) {
     const newData = {};
     for (const itemIndex in data) {
@@ -62,13 +68,8 @@ export default class Main extends VuexModule {
   }
 
   @Mutation
-  setNews(data) {
-    this.news.push(...data);
-  }
-
-  @Mutation
   resetNews() {
-    this.news = [];
+    this.news = {};
   }
 
   @Mutation
@@ -86,6 +87,11 @@ export default class Main extends VuexModule {
     stateMerge(this.soonFilms, soon);
   }
 
+  @Mutation
+  resetComments() {
+    this.comments = {};
+  }
+
   @Action
   async getNews(pagination: { skip: number, take: number }) {
     try {
@@ -95,7 +101,7 @@ export default class Main extends VuexModule {
         limit: pagination.take,
       });
       if (data.success) {
-        this.setNews(data.news);
+        this.setModels({ model: 'news', data: data.news });
       }
     } catch (error) {
       console.error(error);
@@ -209,6 +215,35 @@ export default class Main extends VuexModule {
       }
     }
     return data;
+  }
+
+  @Action
+  async fetchNews(newsId: string) {
+    this.resetComments();
+    const { data } = await api.get(`news/${newsId}`);
+    if (data.success) {
+      this.setModels({
+        model: 'news',
+        data: [data.newsItem],
+      });
+      this.setModels({
+        model: 'comments',
+        data: data.comments,
+      });
+    }
+  }
+
+  @Action
+  async sendComment({ comment, newsId }: { newsId: string, comment: any }) {
+    this.setLoading(true);
+    const { data } = await api.post(`news/${newsId}/comment`, comment);
+    if (data.success) {
+      this.setModels({
+        model: 'comments',
+        data: [data.comment],
+      });
+    }
+    this.setLoading(false);
   }
 
   @MutationAction({ mutate: ['cinema'] })

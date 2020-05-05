@@ -5,6 +5,7 @@ import Soon from '@/core/Soon/Soon.vue';
 import Timetable from '@/core/Timetable/Timetable.vue';
 import PickSeat from '@/core/PickSeat/PickSeat.vue';
 import FilmPage from '@/core/Film/Film.vue';
+import NewsPage from '@/core/NewsPage/NewsPage.vue';
 import { isDev } from '@/shared/constants';
 
 Vue.use(VueRouter);
@@ -46,8 +47,17 @@ export const routes = [
   {
     path: '/film/:filmId',
     props: true,
-    name: 'Выбор мест',
+    name: 'Фильм',
     component: FilmPage,
+    meta: {
+      inHeader: false,
+    }
+  },
+  {
+    path: '/news/:newsId',
+    props: true,
+    name: 'Новости',
+    component: NewsPage,
     meta: {
       inHeader: false,
     }

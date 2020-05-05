@@ -23,7 +23,7 @@ export interface NewsItem extends WithOid {
 }
 export interface NewsComment {
   text: string;
-  time: Date;
+  date: Date;
 }
 
 export interface Film extends WithOid {
