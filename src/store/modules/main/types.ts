@@ -11,3 +11,8 @@ export namespace Response {
     genres: Genre[];
   }
 }
+
+export interface PaginationQuery {
+  skip: number;
+  take: number;
+}

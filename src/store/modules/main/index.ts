@@ -1,8 +1,8 @@
 import { Module, VuexModule, Mutation, Action, MutationAction, getModule } from 'vuex-module-decorators';
 import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre, NewsItem, NewsComment } from '@/store/models';
 import api from '@/api';
-import { ModelMap } from '@/types';
-import { Response } from './types';
+import { ModelMap, Pagination } from '@/types';
+import { Response, PaginationQuery } from './types';
 import store from '@/store';
 import { stateMerge } from 'vue-object-merge';
 import moment from 'moment';
@@ -38,6 +38,16 @@ export default class Main extends VuexModule {
   soonFilms: { [key: string]: Film[] } = {};
   news: ModelMap<NewsItem> = {};
   comments: ModelMap<Comment> = {};
+  newsPagination: Pagination = {
+    page: 0,
+    hasMore: false,
+    total: 0,
+  };
+  commentsPagination: Pagination = {
+    page: 0,
+    hasMore: false,
+    total: 0,
+  };
 
   @Mutation
   setModels({ model, data }: {
@@ -50,6 +60,11 @@ export default class Main extends VuexModule {
       newData[entry._id] = entry;
     }
     stateMerge(this[model], newData);
+  }
+
+  @Mutation
+  setPagination({ key, data }: { key: string, data: Partial<Pagination> }) {
+    stateMerge(this[key], data);
   }
 
   @Mutation
@@ -102,6 +117,13 @@ export default class Main extends VuexModule {
       });
       if (data.success) {
         this.setModels({ model: 'news', data: data.news });
+        this.setPagination({
+          key: 'newsPagination',
+          data: {
+            total: data.total,
+            hasMore: data.hasMore
+          }
+        });
       }
     } catch (error) {
       console.error(error);
@@ -218,9 +240,11 @@ export default class Main extends VuexModule {
   }
 
   @Action
-  async fetchNews(newsId: string) {
+  async fetchNews({ id, take }: { id: string, take: number }) {
     this.resetComments();
-    const { data } = await api.get(`news/${newsId}`);
+    const { data } = await api.get(`news/${id}`, {
+      take,
+    });
     if (data.success) {
       this.setModels({
         model: 'news',
@@ -229,6 +253,31 @@ export default class Main extends VuexModule {
       this.setModels({
         model: 'comments',
         data: data.comments,
+      });
+      this.setPagination({
+        key: 'commentsPagination',
+        data: {
+          total: data.total,
+          hasMore: data.hasMore
+        }
+      });
+    }
+  }
+  @Action
+  async fetchComments({ newsId, pagination }: { newsId: string, pagination: PaginationQuery }) {
+    this.resetComments();
+    const { data } = await api.get(`news/${newsId}/comments`, {
+      skip: pagination.skip,
+      limit: pagination.take,
+    });
+    if (data.success) {
+      this.setModels({ model: 'comments', data: data.comments });
+      this.setPagination({
+        key: 'commentsPagination',
+        data: {
+          total: data.total,
+          hasMore: data.hasMore
+        }
       });
     }
   }

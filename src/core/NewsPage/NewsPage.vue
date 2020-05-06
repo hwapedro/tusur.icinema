@@ -14,6 +14,15 @@
             :key="commentId"
             :comment="comments[commentId]"
           />
+          <!-- paginator -->
+          <Paginator
+            :take="take"
+            :page="page"
+            :hasMore="paginator.hasMore"
+            :total="paginator.total"
+            @page-next="onPageNext"
+            @page-prev="onPagePrev"
+          />
           <!-- write yours -->
           <CommentForm @send-comment="onSendComment" />
         </div>
@@ -42,13 +51,14 @@ import Loader from '../../shared/components/Loader.vue';
 import Comment from './Comment.vue';
 import CommentForm from './CommentForm.vue';
 import FormErrors from '../../shared/components/FormErrors.vue';
-import { ModelMap } from "../../types";
+import { ModelMap, Pagination } from "../../types";
 import { Genre, Showtime, Hall, HallCell, AgeRule, Cinema, Film } from '../../store/models';
 import { formatPrice } from '../../shared/utils';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
 import SeatPicker from './SeatPicker.vue';
 import AlertIcon from 'vue-ionicons/dist/js/md-alert'
+import Paginator from '../../shared/components/Paginator.vue';
 
 const EL_LENGTH = 150;
 
@@ -56,15 +66,53 @@ const EL_LENGTH = 150;
   components: {
     Loader,
     Comment,
+    Paginator,
     CommentForm
   }
 })
 export default class NewsPage extends Vue {
   name = 'NewsPage';
   @Prop() newsId!: string;
+  commnentsLoading: boolean = false;
+  skip: number = 0;
+  take: number = 2;
 
   mounted() {
-    MainModule.fetchNews(this.newsId);
+    MainModule.fetchNews({
+      id: this.newsId, 
+      take: this.take
+    });
+  }
+
+  fetchComments() {
+    try {
+      this.commnentsLoading = true;
+      MainModule.fetchComments({
+        newsId: this.newsId,
+        pagination: {
+          take: this.take,
+          skip: this.skip
+        }
+      });
+    } finally {
+      this.commnentsLoading = false;
+    }
+  }
+
+  onPageNext() {
+    this.skip = this.skip + this.take;
+    this.fetchComments();
+  }
+  onPagePrev() {
+    this.skip = Math.max(0, this.skip - this.take);
+    this.fetchComments();
+  }
+
+  get page() {
+    return Math.floor(this.skip / this.take);
+  }
+  get paginator(): Pagination {
+    return MainModule.commentsPagination;
   }
 
   onSendComment(comment: any) {

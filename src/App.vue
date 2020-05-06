@@ -46,4 +46,9 @@ export default class App extends Vue {
 html {
   overflow-y: auto;
 }
+.center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 </style>

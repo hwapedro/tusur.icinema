@@ -53,7 +53,7 @@ export default class Comment extends Vue {
     return this.comment ? this.comment.text : '';
   }
   get commentTime() {
-    return this.comment ? moment(this.comment.date).from(moment()) : '';
+    return this.comment ? moment(this.comment.date).format('DD MMM YYYY, HH:mm') : '';
   }
 }
 
