@@ -26,7 +26,7 @@
           />
         </div>
         <div class="column is-3">
-          <h2 class="title">Ваши места</h2>
+          <div class="title is-3">Ваши места:</div>
           <div>
             <div
               class="buttons is-fullwidth has-addons"
@@ -65,6 +65,18 @@
                 @click="removeSelect(place)"
               >&#10006;</button>
             </div>
+          </div>
+          <div class="title is-3">Ваши товары:</div>
+          <div>
+            <BoughtItem
+              v-for="(selectedItem, itemId) in selectedItems"
+              :key="itemId"
+              :shopItem="selectedItem"
+              :count="selectedItem.count"
+              :isBad="itemIsBad(itemId)"
+              :isPaying="isPaying"
+              @unbuy-item="onItemUnbuy"
+            />
           </div>
           <div class="title is-3">Итого: {{totalSum}} руб.</div>
           <hr>
@@ -156,9 +168,11 @@ import moment from 'moment';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
 import SeatPicker from './SeatPicker.vue';
+import BoughtItem from './BoughtItem.vue';
 import Shop from './Shop.vue';
 import AlertIcon from 'vue-ionicons/dist/js/md-alert'
 import { ShopItem as ShopItemModel } from '../../store/models';
+import { stateMerge } from 'vue-object-merge';
 
 @Component({
   components: {
@@ -168,7 +182,8 @@ import { ShopItem as ShopItemModel } from '../../store/models';
     AlertIcon,
     Loader,
     SeatPicker,
-    Shop
+    Shop,
+    BoughtItem
   }
 })
 export default class PickSeat extends Vue {
@@ -205,7 +220,7 @@ export default class PickSeat extends Vue {
   blockId: string = '';
 
   selectedPlaces: { row: number, cell: number }[] = [];
-  selectedItems: Record<string, number> = {};
+  selectedItems: Record<string, ShopItemModel & { count: number }> = {};
 
   created() {
     if (!this.showtimes[this.showtimeId])
@@ -213,14 +228,12 @@ export default class PickSeat extends Vue {
 
     Bus.$on('select-seat', this.onSeatSelect);
     Bus.$on('deselect-seat', this.onSeatDeselect);
-     Bus.$on('buy-item', this.onItemBuy);
-    Bus.$on('unbuy-item', this.onItemUnbuy);
- }
+    Bus.$on('buy-item', this.onItemBuy);
+  }
   destroyed() {
     Bus.$off('select-seat');
     Bus.$off('deselect-seat');
-     Bus.$off('buy-item');
-      Bus.$off('unbuy-item');
+    Bus.$off('buy-item');
   }
 
   onShopItemAdd({ item }) {
@@ -254,17 +267,27 @@ export default class PickSeat extends Vue {
 
   onItemBuy(item) {
     if (this.isPaying) return;
-    this.selectedItems[item._id] = this.selectedItems[item._id] || 0;
-    this.selectedItems[item._id]
-    this.selectedItems.push(item);
+    const data = this.selectedItems[item._id] || {
+      count: 0,
+      ...item,
+    };
+    data.count++;
+    const newobj = {
+      [item._id]: data,
+    };
+    stateMerge(this.selectedItems, newobj);
   }
   onItemUnbuy(item) {
     if (this.isPaying) return;
-    this.selectedItems = this.selectedItems.map(addedItem => {
-      if (addedItem._id === item._id) {
+    if (typeof this.selectedItems[item._id] !== 'undefined') {
+      this.selectedItems[item._id].count--;
+      if (this.selectedItems[item._id].count <= 0) {
+        delete this.selectedItems[item._id];
       }
-      return addedItem;
-    });
+    }
+  }
+  itemIsBad(itemId) {
+    return false;
   }
 
   get showtime() {
