@@ -145,6 +145,13 @@ export default class Timetable extends Vue {
     if (MainModule.cinema) {
       this.fetchTimetable();
     }
+    let cc = 0;
+    let int = setInterval(() => {
+      this.handleResize();
+      ++cc;
+      if (cc > 10)
+        clearInterval(int);
+    }, 100)
     window.addEventListener("resize", this.handleResize);
   }
 
@@ -159,7 +166,13 @@ export default class Timetable extends Vue {
 
   @Watch("cinema")
   onCinemaChange() {
+    setTimeout(this.handleResize, 1000 );
     this.fetchTimetable();
+  }
+
+  @Watch('showtimes')
+  onShowtimeChange() {
+    setTimeout(this.handleResize, 1000 );
   }
 
   @Debounce({ time: 500 })

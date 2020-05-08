@@ -75,7 +75,7 @@ export default class NewsPage extends Vue {
   @Prop() newsId!: string;
   commnentsLoading: boolean = false;
   skip: number = 0;
-  take: number = 2;
+  take: number = process.env.NODE_ENV === 'development' ? 2 : 15;
 
   mounted() {
     MainModule.fetchNews({

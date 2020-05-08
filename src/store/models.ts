@@ -75,6 +75,7 @@ export interface Hall extends WithOid {
 export interface ShopItem extends WithOid {
   name: string;
   price: number;
+  image: string;
   inStock: boolean;
 }
 

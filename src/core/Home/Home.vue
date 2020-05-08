@@ -50,7 +50,7 @@ export default class Home extends Vue {
   name = 'Home';
   newsLoading = true;
   skip: number = 0;
-  take: number = 2;
+  take: number = process.env.NODE_ENV === 'development' ? 2 : 15;
 
   mounted() {
     this.fetchNews();

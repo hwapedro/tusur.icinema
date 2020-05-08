@@ -74,7 +74,6 @@ export default class SeatPicker extends Vue {
   calculateCellState(hall: Hall, showtime: Showtime) {
     if (!hall || !showtime)
       return;
-    console.log(hall, showtime);
     const structure = hall.structure;
     this.cellState = [];
     for (let i = 0; i < structure.length; ++i) {

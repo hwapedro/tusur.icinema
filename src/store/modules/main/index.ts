@@ -1,5 +1,5 @@
 import { Module, VuexModule, Mutation, Action, MutationAction, getModule } from 'vuex-module-decorators';
-import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre, NewsItem, NewsComment } from '@/store/models';
+import { Film, Cinema, Hall, Shop, Showtime, HallCell, AgeRule, Genre, NewsItem, NewsComment, ShopItem } from '@/store/models';
 import api from '@/api';
 import { ModelMap, Pagination } from '@/types';
 import { Response, PaginationQuery } from './types';
@@ -20,6 +20,12 @@ export interface IMainState {
   showtimes: ModelMap<Showtime>;
 }
 
+const defaultPagination = {
+  page: 0,
+  hasMore: false,
+  total: 0,
+};
+
 @Module({ dynamic: true, store, name: 'main' })
 export default class Main extends VuexModule {
   loading: boolean = false;
@@ -31,6 +37,7 @@ export default class Main extends VuexModule {
   halls: ModelMap<Hall> = {};
   hallCells: ModelMap<HallCell> = {};
   shops: ModelMap<Shop> = {};
+  shopItems: ModelMap<ShopItem> = {};
   showtimes: ModelMap<Showtime> = {};
   ageRules: ModelMap<AgeRule> = {};
   genres: ModelMap<Genre> = {};
@@ -38,22 +45,17 @@ export default class Main extends VuexModule {
   soonFilms: { [key: string]: Film[] } = {};
   news: ModelMap<NewsItem> = {};
   comments: ModelMap<Comment> = {};
-  newsPagination: Pagination = {
-    page: 0,
-    hasMore: false,
-    total: 0,
-  };
-  commentsPagination: Pagination = {
-    page: 0,
-    hasMore: false,
-    total: 0,
-  };
+  newsPagination: Pagination = { ...defaultPagination };
+  commentsPagination: Pagination = { ...defaultPagination };
+  shopItemsPagination: Pagination = { ...defaultPagination }
 
   @Mutation
   setModels({ model, data }: {
     model: string,
     data: any
   }) {
+    if (data.length !== undefined && data.length === 0)
+      return;
     const newData = {};
     for (const index in data) {
       const entry = data[index];
@@ -105,6 +107,12 @@ export default class Main extends VuexModule {
   @Mutation
   resetComments() {
     this.comments = {};
+  }
+
+  @Mutation
+  reset({ what }) {
+    this[what] = {};
+    stateMerge(this[what], {});
   }
 
   @Action
@@ -217,10 +225,10 @@ export default class Main extends VuexModule {
         data: data.halls
       });
       this.setHallCells(data.hallCells);
-      this.setModels({
-        model: 'shops',
-        data: data.shops
-      });
+      // this.setModels({
+      //   model: 'shops',
+      //   data: data.shops
+      // });
       this.setModels({
         model: 'ageRules',
         data: data.ageRules
@@ -274,6 +282,42 @@ export default class Main extends VuexModule {
       this.setModels({ model: 'comments', data: data.comments });
       this.setPagination({
         key: 'commentsPagination',
+        data: {
+          total: data.total,
+          hasMore: data.hasMore
+        }
+      });
+    }
+  }
+
+  @Action
+  async fetchShops() {
+    if (!this.cinema) {
+      return false;
+    }
+    this.setLoading(true);
+    const { data } = await api.get(`shops`, {
+      cinema: this.cinema,
+    });
+    if (data.success) {
+      this.setModels({
+        model: 'shops',
+        data: data.shops,
+      });
+    }
+    this.setLoading(false);
+  }
+  @Action
+  async fetchShopItems({ shopId, pagination }: { shopId: string, pagination: PaginationQuery }) {
+    this.reset({ what: 'shopItems' });
+    const { data } = await api.get(`shops/${shopId}/items`, {
+      skip: pagination.skip,
+      limit: pagination.take,
+    });
+    if (data.success) {
+      this.setModels({ model: 'shopItems', data: data.items });
+      this.setPagination({
+        key: 'shopItemsPagination',
         data: {
           total: data.total,
           hasMore: data.hasMore

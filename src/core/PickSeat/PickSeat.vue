@@ -123,6 +123,12 @@
           <div id="paypal-button"></div>
         </div>
       </div>
+      <hr>
+      <div class="columns">
+        <div class="column">
+          <Shop @add-item="onShopItemAdd" />
+        </div>
+      </div>
     </div>
   </Loader>
 </template>
@@ -150,7 +156,9 @@ import moment from 'moment';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
 import SeatPicker from './SeatPicker.vue';
+import Shop from './Shop.vue';
 import AlertIcon from 'vue-ionicons/dist/js/md-alert'
+import { ShopItem as ShopItemModel } from '../../store/models';
 
 @Component({
   components: {
@@ -159,7 +167,8 @@ import AlertIcon from 'vue-ionicons/dist/js/md-alert'
     FormErrors,
     AlertIcon,
     Loader,
-    SeatPicker
+    SeatPicker,
+    Shop
   }
 })
 export default class PickSeat extends Vue {
@@ -196,6 +205,7 @@ export default class PickSeat extends Vue {
   blockId: string = '';
 
   selectedPlaces: { row: number, cell: number }[] = [];
+  selectedItems: Record<string, number> = {};
 
   created() {
     if (!this.showtimes[this.showtimeId])
@@ -203,12 +213,19 @@ export default class PickSeat extends Vue {
 
     Bus.$on('select-seat', this.onSeatSelect);
     Bus.$on('deselect-seat', this.onSeatDeselect);
-  }
+     Bus.$on('buy-item', this.onItemBuy);
+    Bus.$on('unbuy-item', this.onItemUnbuy);
+ }
   destroyed() {
     Bus.$off('select-seat');
     Bus.$off('deselect-seat');
+     Bus.$off('buy-item');
+      Bus.$off('unbuy-item');
   }
 
+  onShopItemAdd({ item }) {
+
+  }
   onSeatSelect({ row, cell }) {
     if (this.isPaying)
       return;
@@ -235,6 +252,21 @@ export default class PickSeat extends Vue {
     this.paymentErrorType = null;
   }
 
+  onItemBuy(item) {
+    if (this.isPaying) return;
+    this.selectedItems[item._id] = this.selectedItems[item._id] || 0;
+    this.selectedItems[item._id]
+    this.selectedItems.push(item);
+  }
+  onItemUnbuy(item) {
+    if (this.isPaying) return;
+    this.selectedItems = this.selectedItems.map(addedItem => {
+      if (addedItem._id === item._id) {
+      }
+      return addedItem;
+    });
+  }
+
   get showtime() {
     return this.showtimes[this.showtimeId];
   }
@@ -259,7 +291,9 @@ export default class PickSeat extends Vue {
   get cinema(): string {
     return MainModule.cinema;
   }
-
+  get shopItems() {
+    return MainModule.shopItems;
+  }
   get paymentErrorText() {
     switch (this.paymentErrorType) {
       case 'taken':
