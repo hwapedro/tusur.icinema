@@ -18,6 +18,9 @@
       <div class="columns">
         <div class="column is-9">
           <h1 class="title">Выберите места</h1>
+          <SeatList
+            :hallCells="hallCells"
+          />
           <SeatPicker
             :disabled="isPaying"
             :showtime="showtime"
@@ -168,6 +171,7 @@ import moment from 'moment';
 import { HOURS_MERGED } from '../../shared/constants';
 import { Bus } from '../../shared/bus';
 import SeatPicker from './SeatPicker.vue';
+import SeatList from './SeatList.vue';
 import BoughtItem from './BoughtItem.vue';
 import Shop from './Shop.vue';
 import AlertIcon from 'vue-ionicons/dist/js/md-alert'
@@ -183,7 +187,8 @@ import { stateMerge } from 'vue-object-merge';
     Loader,
     SeatPicker,
     Shop,
-    BoughtItem
+    BoughtItem,
+    SeatList
   }
 })
 export default class PickSeat extends Vue {
@@ -330,10 +335,12 @@ export default class PickSeat extends Vue {
     if (!hall) {
       return '-';
     }
-    return formatPrice(this.selectedPlaces.reduce((acc, curr) => {
+    const sumCells = this.selectedPlaces.reduce((acc, curr) => {
       const cell = MainModule.hallCells[hall.structure[curr.row][curr.cell]];
       return acc + (cell ? cell.price : 0);
-    }, 0), false);
+    }, 0);
+    const sumItems = Object.values(this.selectedItems).reduce((acc, curr) => acc + curr.price * curr.count, 0);
+    return formatPrice(sumCells + sumItems, false);
   }
 
   // @Watch('selectedPlaces')

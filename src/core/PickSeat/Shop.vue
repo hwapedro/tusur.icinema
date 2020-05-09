@@ -101,7 +101,6 @@ export default class Shop extends Vue {
           const entry = data.items[index];
           newData[entry._id] = entry;
         }
-        console.log(newData);
         stateMerge(this.shopItemsPaginated, newData);
         this.total = data.total;
         this.hasMore = data.hasMore;
