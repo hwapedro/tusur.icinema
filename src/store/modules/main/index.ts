@@ -59,6 +59,8 @@ export default class Main extends VuexModule {
     const newData = {};
     for (const index in data) {
       const entry = data[index];
+      if (!entry._id)
+        continue;
       newData[entry._id] = entry;
     }
     stateMerge(this[model], newData);
@@ -77,12 +79,12 @@ export default class Main extends VuexModule {
   @Mutation
   setHallCells(data) {
     const newData = {};
-    for (const itemIndex in data) {
-      const hallCell = data[itemIndex];
-      if (!hallCell.index || !hallCell._id || !hallCell.price)
+    for (const hallCell of data) {
+      if (typeof hallCell.index !== 'number' || !hallCell.index || !hallCell._id || !hallCell.price)
         continue;
       newData[hallCell.index] = hallCell;
     }
+    delete newData['undefined'];
     stateMerge(this.hallCells, newData);
   }
 

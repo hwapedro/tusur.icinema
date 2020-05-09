@@ -16,9 +16,9 @@
         </div>
       </div>
       <div class="columns">
-        <div class="column is-9">
+        <div class="column is-8">
           <h1 class="title">Выберите места</h1>
-          <SeatList :hallCells="hallCells" />
+          <SeatList :hallCells="existingHallCells" />
           <SeatPicker
             :disabled="isPaying"
             :showtime="showtime"
@@ -26,7 +26,7 @@
             :hallCells="hallCells"
           />
         </div>
-        <div class="column is-3">
+        <div class="column is-4">
           <div class="title is-3">Ваши места:</div>
           <div>
             <div
@@ -229,8 +229,7 @@ export default class PickSeat extends Vue {
   selectedItems: Record<string, ShopItemModel & { count: number }> = {};
 
   created() {
-    if (!this.showtimes[this.showtimeId])
-      MainModule.getShowtime(this.showtimeId);
+    MainModule.getShowtime(this.showtimeId);
 
     Bus.$on('select-seat', this.onSeatSelect);
     Bus.$on('deselect-seat', this.onSeatDeselect);
@@ -323,6 +322,21 @@ export default class PickSeat extends Vue {
   get shopItems() {
     return MainModule.shopItems;
   }
+  get existingHallCells() {
+    if (!this.showtime)
+      return;
+    const hc = {};
+    const hall = this.halls[this.showtime.hall];
+    if (!hall) {
+      return hc;
+    }
+    hall.structure.forEach(row => row.forEach(cell => {
+      if (cell > 0)
+        hc[cell] = this.hallCells[cell];
+    }));
+    console.log(hc);
+    return hc;
+  }
   get paymentErrorText() {
     switch (this.paymentErrorType) {
       case 'taken':
@@ -381,7 +395,7 @@ export default class PickSeat extends Vue {
       return `
 --------------------------------------------------------
 Кинотеатр ${cinema.name}, ${cinema.address}.
-Билеты на фильм ${film.name}, сеанс ${moment(time).format('DD MMM YYYY, HH:mm:ss')}.
+Билеты на фильм ${film.name}, сеанс ${moment(time).format('DD MMM YYYY, HH:mm')}.
 Покупатель: ${firstName} ${lastName}
 Телефон: ${phone}
 ---- Места ----

@@ -161,7 +161,7 @@ export default class SeatPicker extends Vue {
     flex-flow: row nowrap;
     align-items: center;
   }
-  $base-size: 2rem;
+  $base-size: 1.8rem;
   .hall-cell {
     margin-right: $space;
     width: $base-size;
