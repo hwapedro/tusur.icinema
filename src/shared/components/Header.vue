@@ -10,7 +10,7 @@
         <router-link
           class="navbar-item"
           to="/"
-        > {{ cinema ? cinemas[cinema].name : 'Cinema' }}</router-link>
+        > {{ (cinema && cinemas[cinema] && cinemas[cinema].name) || 'Cinema' }}</router-link>
         <a
           role="button"
           class="navbar-burger burger"

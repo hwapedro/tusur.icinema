@@ -129,7 +129,7 @@
             class="button is-primary is-fullwidth"
             style="margin-top: 1rem;"
             :disabled="$v.$anyError || !selectedPlaces.length"
-            v-if="!isPaying || payUntil > new Date()"
+            v-if="!isPaying"
             @click="prepareForPayment"
           >Перейти к оплате</button>
           <hr v-if="isPaying">
@@ -175,6 +175,7 @@ import Shop from './Shop.vue';
 import AlertIcon from 'vue-ionicons/dist/js/md-alert'
 import { ShopItem as ShopItemModel } from '../../store/models';
 import { stateMerge } from 'vue-object-merge';
+import jsPDF from 'jspdf';
 
 @Component({
   components: {
@@ -201,6 +202,7 @@ export default class PickSeat extends Vue {
   badSeats: any[] = [];
   badItems: any[] = [];
   paymentErrorType = null;
+  ticket: any = null;
 
   @Watch('phone')
   wph() {
@@ -351,10 +353,49 @@ export default class PickSeat extends Vue {
     return formatPrice(sumCells + sumItems, false);
   }
 
-  // @Watch('selectedPlaces')
-  // onSelectedPlacesChange() {
-  //   this.renderPaymentButton();
-  // }
+  ticketText() {
+    if (this.ticket) {
+      const {
+        _id: ticketId,
+        firstName,
+        lastName,
+        phone,
+        transactionId,
+        orderedItems,
+        seats,
+        price,
+        dbItems,
+        cinema,
+        film,
+        hall,
+        time
+      } = this.ticket;
+      const formatPlace = (seat) => {
+        return `Ряд ${seat.row + 1}, место ${seat.cell + 1}`;
+      }
+      const formatItem = (item) => {
+        const dbItem = dbItems.find(dbi => dbi._id === item.item);
+        return `${dbItem ? dbItem.name : ''}: ${formatPrice(dbItem.price, true)} x ${item.quantity} шт = ${formatPrice(item.price * item.quantity, true)}`;
+      }
+
+      return `
+--------------------------------------------------------
+Кинотеатр ${cinema.name}, ${cinema.address}.
+Билеты на фильм ${film.name}, сеанс ${moment(time).format('DD MMM YYYY, HH:mm:ss')}.
+Покупатель: ${firstName} ${lastName}
+Телефон: ${phone}
+---- Места ----
+${seats.map(formatPlace).join('\n')}
+---- Товары ----
+${orderedItems.map(formatItem).join('\n')}
+--------------------------------------------------------
+Итого:  ${formatPrice(price, true)}
+--------------------------------------------------------
+ID заказа: ${ticketId}
+`.replace(/\n/g, '\r\n');
+    }
+    return '';
+  }
 
   async prepareForPayment() {
     this.paymentErrorType = null;
@@ -395,6 +436,28 @@ export default class PickSeat extends Vue {
       }, 20);
     });
   }
+
+  async generatePDF(ticket: any) {
+    const downloadFile = (data: any, mime: string, filename: string) => {
+      const blob = new Blob([data], { type: mime });
+      if ('msSaveOrOpenBlob' in navigator) {
+        navigator.msSaveBlob(blob, filename);
+      } else {
+        const elem = document.createElement('a');
+        elem.href = URL.createObjectURL(blob);
+        elem.download = filename;
+        document.body.appendChild(elem);
+        elem.click();
+        document.body.removeChild(elem);
+      }
+    }
+
+    this.ticket = ticket;
+    const text = this.ticketText();
+    console.log(text);
+    downloadFile(text, 'plain/text', `${ticket.firstName}_${ticket.lastName}_${(new Date).toISOString()}.txt`);
+  }
+
   async renderPaymentButton() {
     await this.waitForPaypal();
     const ppb = document.querySelector('#paypal-button > *');
@@ -418,11 +481,19 @@ export default class PickSeat extends Vue {
           blockId: this.blockId,
           firstName: this.firstName,
           lastName: this.lastName,
-          orderedItems: [],
+          orderedItems: this.selectedItemsPrep,
           phone: this.phone,
+          cinemaId: this.cinema,
           orderId: data.orderID,
         });
         console.log(captureResult);
+        if (captureResult.success) {
+          // print ticket
+          await this.generatePDF(captureResult.ticket);
+          setTimeout(() => {
+            this.$router.push('/thank-you');
+          }, 1000);
+        }
       }
     }).render('#paypal-button');
   }

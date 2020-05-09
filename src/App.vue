@@ -2,14 +2,15 @@
   <div class="page-wrap">
     <Header />
     <router-view></router-view>
-    <div
-      id="push-bottom"
-    ></div>
+    <div id="push-bottom"></div>
+    <CinemaSelectOverlay :modalActive="modalActive" 
+      @cinema-selected="closeModal"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import './assets/bulma.min.css';
 import Header from './shared/components/Header.vue';
 import Footer from './shared/components/Footer.vue';
@@ -20,16 +21,51 @@ import {
   Mutation
 } from 'vuex-class';
 import { MainModule } from "./store/modules/main";
+import CinemaSelectOverlay from './core/CinemaSelectOverlay.vue';
 
 @Component({
   components: {
     Header,
-    Footer
+    Footer,
+    CinemaSelectOverlay
   }
 })
 export default class App extends Vue {
+  modalActive: boolean = false;
+  modalTimeout: any = null;
+
   created() {
     MainModule.fetchAll();
+    const cinema = localStorage.getItem('cinema');
+    if (cinema) {
+      MainModule.setCinema(cinema);
+    } else {
+      this.modalActive = true;
+    }
+  }
+
+  closeModal() {
+    this.modalActive = false;
+  }
+
+  @Watch('cinema', { immediate: false })
+  onCinemaChange(cinema) {
+    if (!cinema) {
+      // suggest to select
+      this.modalActive = true;
+    }
+  }
+
+  @Watch('modalActive')
+  onModalActiveChange(newval: boolean) {
+    clearTimeout(this.modalTimeout);
+    setTimeout(() => {
+      document.querySelector('html').classList[(newval === true) ? 'add' : 'remove']('is-clipped');
+    }, 100)
+  }
+
+  get cinema() {
+    return MainModule.cinema;
   }
 }
 </script>

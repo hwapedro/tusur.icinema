@@ -79,7 +79,7 @@ export default class Main extends VuexModule {
     const newData = {};
     for (const itemIndex in data) {
       const hallCell = data[itemIndex];
-      if (!hallCell.index)
+      if (!hallCell.index || !hallCell._id || !hallCell.price)
         continue;
       newData[hallCell.index] = hallCell;
     }
@@ -143,7 +143,7 @@ export default class Main extends VuexModule {
   @Action
   async getFilm(id: string) {
     try {
-      const { data } = await api.get(`schedule/film/${id}`);
+      const { data } = await api.get(`general/film/${id}`);
       if (data.success) {
         this.setModels({
           model: 'film',
@@ -241,10 +241,10 @@ export default class Main extends VuexModule {
       });
 
       // set cinema
-      if (process.env.NODE_ENV === 'development'
-        && Object.keys(this.cinemas).length) {
-        setTimeout(() => MainModule.setCinema(Object.keys(this.cinemas)[0]), .5 * 1000);
-      }
+      // if (process.env.NODE_ENV === 'development'
+      //   && Object.keys(this.cinemas).length) {
+      //   setTimeout(() => MainModule.setCinema(Object.keys(this.cinemas)[0]), .5 * 1000);
+      // }
     }
     return data;
   }
@@ -343,6 +343,7 @@ export default class Main extends VuexModule {
 
   @MutationAction({ mutate: ['cinema'] })
   async setCinema(value: string) {
+    localStorage.setItem('cinema', value);
     return {
       cinema: value
     };

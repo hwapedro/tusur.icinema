@@ -6,6 +6,7 @@ import Timetable from '@/core/Timetable/Timetable.vue';
 import PickSeat from '@/core/PickSeat/PickSeat.vue';
 import FilmPage from '@/core/Film/Film.vue';
 import NewsPage from '@/core/NewsPage/NewsPage.vue';
+import ThanksPage from '@/core/Done/Thanks.vue';
 import { isDev } from '@/shared/constants';
 
 Vue.use(VueRouter);
@@ -58,6 +59,15 @@ export const routes = [
     props: true,
     name: 'Новости',
     component: NewsPage,
+    meta: {
+      inHeader: false,
+    }
+  },
+  {
+    path: '/thank-you',
+    props: true,
+    name: 'Спасибо',
+    component: ThanksPage,
     meta: {
       inHeader: false,
     }

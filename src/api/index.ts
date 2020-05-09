@@ -49,7 +49,7 @@ class Api {
     }
   }
 
-  async put<T = any>(endpoint: string, body: object,) {
+  async put<T = any>(endpoint: string, body: object, ) {
     try {
       const {
         headers,
@@ -92,4 +92,6 @@ class Api {
   }
 }
 
-export default new Api('http://localhost:5300/client/api/v1/');
+export default new Api(process.env.NODE_ENV === 'production'
+  ? 'http://germangorodnev.com:5300/client/api/v1/'
+  : 'http://localhost:5300/client/api/v1/');

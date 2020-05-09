@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule="" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.js"></script>
+    <script type="module" src="<%= BASE_URL %>Nunito-Regular-normal.js"></script>
+    <script type="module" src="<%= BASE_URL %>Nunito-Regular-normal.js"></script>
+    <script nomodule="" src="<%= BASE_URL %>ionicons.esm.js"></script>
+    <script nomodule="" src="<%= BASE_URL %>ionicons.js"></script>
   </head>
   <body>
     <noscript>
@@ -15,6 +17,6 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AVl9NsqwGiru3W3H6nZmhteS65bn05JY0CC-3cI8g2ptcWBlJaSJHDAmVp7VEsWFv5F7WQjAfIDEIrA4&currency=RUB" async defer></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AVl9NsqwGiru3W3H6nZmhteS65bn05JY0CC-3cI8g2ptcWBlJaSJHDAmVp7VEsWFv5F7WQjAfIDEIrA4&currency=RUB&disable-funding=credit,card" async defer></script>
   </body>
 </html>

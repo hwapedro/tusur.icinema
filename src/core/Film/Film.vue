@@ -1,6 +1,6 @@
 <template>
-  <Loader :loading="filmLoading">
-    <div class="container">
+  <Loader :loading="filmLoading || !film">
+    <div class="container" v-if="film">
       <div class="columns">
         <div class="column is-3-desktop is-12-mobile">
           <figure class="image is-fullwidth">
@@ -37,7 +37,11 @@
       <div class="columns">
         <div class="column is-12-desktop is-12-mobile">
           <div class="subtitle">Новости</div>
-          <NewsPreview v-for="newsItem in filmNews" :item="newsItem" :key="newsItem._id" />
+          <NewsPreview
+            v-for="newsItem in filmNews"
+            :item="newsItem"
+            :key="newsItem._id"
+          />
         </div>
       </div>
     </div>
@@ -71,8 +75,12 @@ export default class FilmPage extends Vue {
   @Prop() filmId!: string;
 
   created() {
+    this.loadFilm()
+  }
+
+  async loadFilm() {
     this.filmLoading = true;
-    MainModule.getFilm(this.filmId);
+    await MainModule.getFilm(this.filmId);
     this.filmLoading = false;
   }
 
