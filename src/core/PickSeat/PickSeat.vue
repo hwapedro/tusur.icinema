@@ -18,9 +18,7 @@
       <div class="columns">
         <div class="column is-9">
           <h1 class="title">Выберите места</h1>
-          <SeatList
-            :hallCells="hallCells"
-          />
+          <SeatList :hallCells="hallCells" />
           <SeatPicker
             :disabled="isPaying"
             :showtime="showtime"
@@ -201,6 +199,7 @@ export default class PickSeat extends Vue {
   phone = '';
 
   badSeats: any[] = [];
+  badItems: any[] = [];
   paymentErrorType = null;
 
   @Watch('phone')
@@ -292,7 +291,7 @@ export default class PickSeat extends Vue {
     }
   }
   itemIsBad(itemId) {
-    return false;
+    return this.badItems.find(item => item._id === itemId);
   }
 
   get showtime() {
@@ -327,7 +326,16 @@ export default class PickSeat extends Vue {
       case 'taken':
         return `Данные места уже заняты:\n${this.badSeats.map(seat => `Ряд ${seat.row + 1}, место ${seat.cell + 1}`).join('\n')}.\nПожалуйста, выберите другие места.`;
         break;
+      case 'out-of-stock':
+        return `Данных товаров нет в наличии:\n${this.badItems.map(item => `${item.name}`).join(',\n')}`;
+        break;
     }
+  }
+  get selectedItemsPrep() {
+    return Object.values(this.selectedItems).map(item => ({
+      item: item._id,
+      quantity: item.count,
+    }));
   }
 
   get totalSum() {
@@ -351,12 +359,14 @@ export default class PickSeat extends Vue {
   async prepareForPayment() {
     this.paymentErrorType = null;
     this.badSeats = [];
+    this.badItems = [];
     await (this as any).$v.$touch();
     if ((this as any).$v.$anyError) {
       return false;
     }
     const { data } = await api.post('payment/start', {
       seats: this.selectedPlaces,
+      items: this.selectedItemsPrep,
       showtimeId: this.showtimeId
     });
     if (data.success) {
@@ -368,6 +378,9 @@ export default class PickSeat extends Vue {
       if (data.status === 'taken') {
         this.paymentErrorType = 'taken';
         this.badSeats = data.seats;
+      } else if (data.status === 'out-of-stock') {
+        this.paymentErrorType = 'out-of-stock';
+        this.badItems = data.items;
       }
     }
   }

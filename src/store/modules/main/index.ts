@@ -79,6 +79,8 @@ export default class Main extends VuexModule {
     const newData = {};
     for (const itemIndex in data) {
       const hallCell = data[itemIndex];
+      if (!hallCell.index)
+        continue;
       newData[hallCell.index] = hallCell;
     }
     stateMerge(this.hallCells, newData);
